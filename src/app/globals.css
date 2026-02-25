@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+/* LEE LAGOS LUXURY THEME 
+  Strict White Backgrounds. Jet Black Text.
+*/
+
+@theme {
+  /* Define our colors exactly */
+  --color-lee-white: #ffffff;
+  --color-lee-black: #0a0a0a;  /* Not 100% black, softer on eyes */
+  --color-lee-grey: #525252;   /* For descriptions */
+  --color-lee-light-grey: #f5f5f5; /* For very subtle borders */
+  
+  /* Sale / Alert Colors */
+  --color-lee-red: #dc2626;
+  
+  /* Font Family Mapping (Matches layout.tsx) */
+  --font-heading: var(--font-montserrat);
+  --font-body: var(--font-lato);
+
+  /* Custom Animations for Tailwind v4 */
+  --animate-shimmer: shimmer 2s infinite;
+
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+}
+
+/* GLOBAL RESETS 
+*/
+body {
+  background-color: var(--color-lee-white);
+  color: var(--color-lee-black);
+  font-family: var(--font-body);
+}
+
+/* LUXURY UTILITIES 
+  Custom classes for that "WatchLocker" feel 
+*/
+
+/* 1. The Container: Keeps content centered but wide */
+.lee-container {
+  @apply max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+/* 2. The Clean Grid: For product listings */
+.lee-grid {
+  @apply grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-10;
+}
+
+/* 3. The "Hustle X Lee" Badge Style */
+.badge-black {
+  @apply bg-lee-black text-white text-[10px] uppercase tracking-widest px-2 py-1 font-bold;
+}
+
+/* 4. Smooth Fade In Animation (Standard CSS approach) */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
