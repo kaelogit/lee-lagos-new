@@ -61,21 +61,21 @@ export default function NewArrivals() {
       <div className="flex flex-col md:flex-row items-center justify-between mb-12 space-y-8 md:space-y-0">
         
         {/* Title */}
-        <div className="text-center md:text-left">
+        <div className="text-center md:text-left shrink-0 md:pr-8">
           <h2 className="font-heading text-3xl font-bold uppercase tracking-widest text-black">
             Just Landed
           </h2>
           <div className="h-1 w-12 bg-black mt-3 mx-auto md:mx-0"></div>
         </div>
 
-        {/* Smart Dynamic Tabs */}
-        <div className="w-full md:w-auto overflow-x-auto scrollbar-hide">
-          <div className="flex items-center justify-start md:justify-end space-x-8 px-4 md:px-0 min-w-max mx-auto border-b border-gray-100">
+        {/* Smart Dynamic Tabs - Scrollbars completely nuked via CSS while retaining swipe */}
+        <div className="w-full overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="flex items-center justify-start md:justify-end space-x-8 border-b border-gray-100 min-w-max px-1">
             {availableTabs.map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`text-xs font-bold uppercase tracking-[0.2em] transition-all whitespace-nowrap py-3 mb-[-1px] ${
+                className={`text-xs font-bold uppercase tracking-[0.2em] transition-all whitespace-nowrap py-4 ${
                   activeTab === tab 
                     ? "text-black border-b-2 border-black" 
                     : "text-gray-400 hover:text-gray-800 border-b-2 border-transparent"
