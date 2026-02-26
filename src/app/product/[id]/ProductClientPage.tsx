@@ -40,7 +40,12 @@ export default function ProductClientPage({ id }: { id: string }) {
   // GET DATA FROM DATABASE
   useEffect(() => {
     async function fetchData() {
-      if (!id) return;
+      // SAFEGUARD: If no ID is passed, stop loading immediately
+      if (!id) {
+        setLoading(false);
+        return;
+      }
+      
       setLoading(true);
 
       const { data: mainProduct, error } = await supabase
@@ -169,7 +174,7 @@ export default function ProductClientPage({ id }: { id: string }) {
   };
 
   if (loading) return <div className="h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div></div>;
-  if (!product) return <div className="h-screen flex items-center justify-center">Item not found.</div>;
+  if (!product) return <div className="h-screen flex items-center justify-center font-bold tracking-widest uppercase">Piece not found.</div>;
 
   return (
     <div className="bg-white min-h-screen">
@@ -178,7 +183,7 @@ export default function ProductClientPage({ id }: { id: string }) {
       <main className="pt-20 md:pt-28 pb-20">
         <div className="lee-container">
           
-          {/* BREADCRUMBS & NAVIGATION (Fixed for Mobile Inline) */}
+          {/* BREADCRUMBS & NAVIGATION */}
           <div className="flex flex-row items-center justify-between gap-4 mb-6 md:mb-8 border-b border-gray-100 pb-4">
             <div className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-2">
               <Link href="/" className="hover:text-black">Home</Link> 
@@ -201,7 +206,7 @@ export default function ProductClientPage({ id }: { id: string }) {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-20 mb-24">
             
-            {/* PHOTOS (Removed Borders) */}
+            {/* PHOTOS */}
             <div className="space-y-4 h-fit">
               <div className="relative aspect-square bg-[#fcfcfc] overflow-hidden rounded-sm">
                 <Image src={product.images[activeImage] || "/placeholder.jpg"} alt={product.name} fill className="object-cover" priority />
@@ -287,13 +292,13 @@ export default function ProductClientPage({ id }: { id: string }) {
               {/* HELP & SHARE */}
               <div className="flex gap-2 mb-12">
                 <a 
-  href={`https://wa.me/2349160003594?text=${encodeURIComponent(`Hello Lee Lagos, I am interested in the ${product.name} (Qty: ${quantity}). Could you please send me a video of this soon as you're chanced so I can see the details? Thank you!`)}`}
-  target="_blank"
-  rel="noopener noreferrer"
-  className="flex-1 bg-white border border-gray-300 text-black h-14 flex items-center justify-center gap-3 uppercase font-bold tracking-widest text-xs hover:bg-gray-50 hover:border-black transition-all rounded-lg"
->
-  <MessageCircle size={18} /> Request Video
-</a>
+                  href={`https://wa.me/2349160003594?text=${encodeURIComponent(`Hello Lee Lagos, I am interested in the ${product.name} (Qty: ${quantity}). Could you please send me a video of this soon as you're chanced so I can see the details? Thank you!`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 bg-white border border-gray-300 text-black h-14 flex items-center justify-center gap-3 uppercase font-bold tracking-widest text-xs hover:bg-gray-50 hover:border-black transition-all rounded-lg"
+                >
+                  <MessageCircle size={18} /> Request Video
+                </a>
                 
                 <button 
                   onClick={() => setIsShareOpen(true)}

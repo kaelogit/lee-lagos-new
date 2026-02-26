@@ -1,15 +1,18 @@
 import { Metadata } from 'next';
 import { supabase } from "../../../lib/supabase";
-import ProductClientPage from "./ProductClientPage"; // We are moving the interactive part to a client component
+import ProductClientPage from "./ProductClientPage";
 
 // ==========================================
 // DYNAMIC METADATA FOR LINK SHARING
 // ==========================================
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  // THE FIX: In Next.js 15, we must 'await' the params before using them!
+  const resolvedParams = await params;
+
   const { data: product } = await supabase
     .from("products")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", resolvedParams.id)
     .single();
 
   if (!product) {
@@ -18,7 +21,6 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     }
   }
 
-  // Calculate the correct price to show in the link preview
   const activePrice = product.is_drop && product.early_access_price 
     ? product.early_access_price 
     : product.on_sale && product.sale_price 
@@ -54,8 +56,8 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   }
 }
 
-// Since Next.js requires metadata to be in a Server Component,
-// we wrap your existing interactive page in this simple server file.
-export default function ProductPageWrapper({ params }: { params: { id: string } }) {
-  return <ProductClientPage id={params.id} />;
+export default async function ProductPageWrapper({ params }: { params: Promise<{ id: string }> }) {
+  // THE FIX: Await the params here too!
+  const resolvedParams = await params;
+  return <ProductClientPage id={resolvedParams.id} />;
 }
