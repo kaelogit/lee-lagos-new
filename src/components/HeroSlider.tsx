@@ -56,11 +56,11 @@ export default function HeroSlider() {
   };
 
   return (
-    // ULTRA-WIDESCREEN SIZING:
-    // Mobile: 220px (forces a horizontal rectangle instead of a square)
-    // Tablet: 320px
-    // Desktop: 480px (very sleek, horizontal billboard)
-    <section className="relative w-full h-[220px] sm:h-[280px] md:h-[380px] lg:h-[480px] overflow-hidden bg-black text-white">
+    // ULTRA-SLIM PANORAMIC SIZING:
+    // Mobile: 200px (Very wide and short)
+    // Tablet: 250px / 320px
+    // Desktop: 400px (A perfectly slim, cinematic banner)
+    <section className="relative w-full h-[200px] sm:h-[250px] md:h-[320px] lg:h-[400px] overflow-hidden bg-black text-white">
       
       {/* 1. THE SLIDES */}
       {SLIDES.map((slide, index) => (
@@ -76,7 +76,6 @@ export default function HeroSlider() {
               src={slide.src}
               alt={slide.title}
               fill
-              // object-cover ensures it fills the wide banner cleanly
               className="object-cover object-center"
               priority={index === 0} 
             />
@@ -84,15 +83,14 @@ export default function HeroSlider() {
             <div className="absolute inset-0 bg-black/20 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
           </div>
 
-          {/* Text Content - Padding adjusted to keep text centered in short banner */}
-          <div className="absolute inset-0 flex items-center justify-center pt-4 md:pt-0">
+          {/* Text Content - perfectly centered for the slim height */}
+          <div className="absolute inset-0 flex items-center justify-center">
             <div className={`lee-container w-full ${
               slide.align === 'left' ? 'text-left' : 
               slide.align === 'right' ? 'text-right' : 'text-center'
             }`}>
               <div className={`max-w-2xl ${slide.align === 'right' ? 'ml-auto' : slide.align === 'center' ? 'mx-auto' : ''}`}>
                 
-                {/* Text scaled down so it doesn't overflow the short height */}
                 <h1 className={`font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-tighter mb-2 transition-all duration-700 transform ${index === current ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}>
                   {slide.title}
                 </h1>
@@ -104,7 +102,7 @@ export default function HeroSlider() {
                 <div className={`transition-all duration-700 delay-300 transform ${index === current ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}>
                   <Link
                     href={slide.link}
-                    className="inline-block bg-white text-black px-6 py-2.5 md:px-8 md:py-3.5 text-[9px] md:text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-gray-200 border border-white transition-all duration-300 rounded-sm shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                    className="inline-block bg-white text-black px-5 py-2.5 md:px-8 md:py-3.5 text-[9px] md:text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-gray-200 border border-white transition-all duration-300 rounded-sm shadow-[0_0_20px_rgba(255,255,255,0.1)]"
                   >
                     {slide.cta}
                   </Link>
@@ -131,8 +129,8 @@ export default function HeroSlider() {
         <ChevronRight size={20} />
       </button>
 
-      {/* 3. PROGRESS DOTS - Moved closer to bottom edge */}
-      <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 z-20 flex space-x-2">
+      {/* 3. PROGRESS DOTS */}
+      <div className="absolute bottom-3 md:bottom-5 left-1/2 -translate-x-1/2 z-20 flex space-x-2">
         {SLIDES.map((_, index) => (
           <button
             key={index}
