@@ -9,12 +9,11 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 const SLIDES = [
   {
     id: 1,
-    // Make sure to always include the "/" at the start for public folder images
     src: "/diamondheroslider.png", 
     title: "VVS Clarity Only.",
     subtitle: "Ice that passes the tester. Every single time.",
     cta: "Shop Diamonds",
-    link: "/shop?category=Diamond",
+    link: "/shop/Diamond",
     align: "center"
   },
   {
@@ -23,7 +22,7 @@ const SLIDES = [
     title: "The Gold Standard.",
     subtitle: "Heavyweight 18k & 24k pieces that hold their value.",
     cta: "Shop Gold",
-    link: "/shop?category=Gold",
+    link: "/shop/Gold",
     align: "left"
   },
   {
@@ -32,7 +31,7 @@ const SLIDES = [
     title: "Signature Scents.",
     subtitle: "Smell expensive. Arrive before you enter.",
     cta: "Discover Perfumes",
-    link: "/shop?category=Perfumes",
+    link: "/shop/Perfumes",
     align: "right"
   }
 ];
@@ -40,7 +39,7 @@ const SLIDES = [
 export default function HeroSlider() {
   const [current, setCurrent] = useState(0);
 
-  // AUTO-PLAY LOGIC (Changes every 5 seconds)
+  // AUTO-PLAY LOGIC
   useEffect(() => {
     const timer = setInterval(() => {
       nextSlide();
@@ -57,8 +56,11 @@ export default function HeroSlider() {
   };
 
   return (
-    // STRICT SIZING: 75vh on mobile, 85vh on laptop. Minimum heights ensure it never gets too squished.
-    <section className="relative h-[75vh] md:h-[85vh] min-h-[500px] w-full overflow-hidden bg-black text-white">
+    // ULTRA-WIDESCREEN SIZING:
+    // Mobile: 220px (forces a horizontal rectangle instead of a square)
+    // Tablet: 320px
+    // Desktop: 480px (very sleek, horizontal billboard)
+    <section className="relative w-full h-[220px] sm:h-[280px] md:h-[380px] lg:h-[480px] overflow-hidden bg-black text-white">
       
       {/* 1. THE SLIDES */}
       {SLIDES.map((slide, index) => (
@@ -71,37 +73,38 @@ export default function HeroSlider() {
           {/* Background Image with Dark Overlay */}
           <div className="absolute inset-0 w-full h-full">
             <Image
-              src={slide.src} // Fixed from slide.image
+              src={slide.src}
               alt={slide.title}
               fill
-              // object-cover forces it to fill the box without squishing. object-center keeps the middle in view.
+              // object-cover ensures it fills the wide banner cleanly
               className="object-cover object-center"
               priority={index === 0} 
             />
-            {/* The "Vignette" Overlay (Makes text readable against bright pictures) */}
-            <div className="absolute inset-0 bg-black/40 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            {/* The "Vignette" Overlay */}
+            <div className="absolute inset-0 bg-black/20 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
           </div>
 
-          {/* Text Content */}
-          <div className="absolute inset-0 flex items-center justify-center pt-10">
+          {/* Text Content - Padding adjusted to keep text centered in short banner */}
+          <div className="absolute inset-0 flex items-center justify-center pt-4 md:pt-0">
             <div className={`lee-container w-full ${
               slide.align === 'left' ? 'text-left' : 
               slide.align === 'right' ? 'text-right' : 'text-center'
             }`}>
               <div className={`max-w-2xl ${slide.align === 'right' ? 'ml-auto' : slide.align === 'center' ? 'mx-auto' : ''}`}>
                 
-                <h1 className={`font-heading text-5xl md:text-7xl lg:text-8xl font-bold uppercase tracking-tighter mb-4 transition-all duration-700 transform ${index === current ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+                {/* Text scaled down so it doesn't overflow the short height */}
+                <h1 className={`font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-tighter mb-2 transition-all duration-700 transform ${index === current ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}>
                   {slide.title}
                 </h1>
                 
-                <p className={`text-lg md:text-xl text-gray-200 mb-8 font-light tracking-wide max-w-lg mx-auto md:mx-0 transition-all duration-700 delay-150 transform ${index === current ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+                <p className={`text-[10px] sm:text-xs md:text-sm lg:text-base text-gray-200 mb-4 md:mb-6 font-light tracking-wide max-w-lg mx-auto md:mx-0 transition-all duration-700 delay-150 transform ${index === current ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}>
                   {slide.subtitle}
                 </p>
                 
-                <div className={`transition-all duration-700 delay-300 transform ${index === current ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+                <div className={`transition-all duration-700 delay-300 transform ${index === current ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}>
                   <Link
                     href={slide.link}
-                    className="inline-block bg-white text-black px-10 py-4 text-xs font-bold uppercase tracking-[0.2em] hover:bg-black hover:text-white border border-white transition-all duration-300"
+                    className="inline-block bg-white text-black px-6 py-2.5 md:px-8 md:py-3.5 text-[9px] md:text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-gray-200 border border-white transition-all duration-300 rounded-sm shadow-[0_0_20px_rgba(255,255,255,0.1)]"
                   >
                     {slide.cta}
                   </Link>
@@ -113,29 +116,29 @@ export default function HeroSlider() {
         </div>
       ))}
 
-      {/* 2. NAVIGATION ARROWS (Hidden on mobile for cleaner look) */}
+      {/* 2. NAVIGATION ARROWS */}
       <button 
         onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-4 bg-black/20 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all hidden md:block"
+        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 md:p-3 bg-black/30 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all hidden md:flex border border-white/10"
       >
-        <ChevronLeft size={32} />
+        <ChevronLeft size={20} />
       </button>
       
       <button 
         onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-4 bg-black/20 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all hidden md:block"
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 md:p-3 bg-black/30 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all hidden md:flex border border-white/10"
       >
-        <ChevronRight size={32} />
+        <ChevronRight size={20} />
       </button>
 
-      {/* 3. PROGRESS DOTS (Bottom Center) */}
-      <div className="absolute bottom-8 md:bottom-10 left-1/2 -translate-x-1/2 z-20 flex space-x-3">
+      {/* 3. PROGRESS DOTS - Moved closer to bottom edge */}
+      <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 z-20 flex space-x-2">
         {SLIDES.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrent(index)}
             className={`h-1 transition-all duration-500 rounded-full ${
-              index === current ? "w-12 bg-white" : "w-2 bg-white/40 hover:bg-white/80"
+              index === current ? "w-6 md:w-10 bg-white" : "w-2 bg-white/40 hover:bg-white/80"
             }`}
           />
         ))}

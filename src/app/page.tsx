@@ -14,15 +14,15 @@ export default function Home() {
   return (
     <div className="pb-20">
       <Navbar />      
-      <Hero />
+      <HeroSlider />
       <NewArrivals />
       <BrandSection />
+      <Hero />
       <OnSale />
       <Bestsellers />
       <SundayDrop />
       <GiftFinder />
       <TrustSection />
-      <HeroSlider />
       <Footer />
       
       {/* 2. We will add the Trust Badges here next */}

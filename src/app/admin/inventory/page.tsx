@@ -25,15 +25,28 @@ type Product = {
   early_access_price: number | null;
   gender: string;
   style: string;
+  created_at?: string;
 };
 
 const emptyProduct: Product = {
   name: "", slug: "", description: "", price: 0,
   on_sale: false, sale_price: null, stock: 1, in_stock: true,
   category: "", subcategory: "", images: [],
-  is_bestseller: false, is_new_arrival: false, // Defaulted to false so it doesn't auto-select
+  is_bestseller: false, is_new_arrival: false, 
   is_drop: false, release_date: "", early_access_price: null,
   gender: "Unisex", style: "Classic"
+};
+
+// UTILITY: Safely format dates for the HTML datetime-local input
+const getLocalDatetime = (dateStr: string | null) => {
+  if (!dateStr) return "";
+  if (dateStr.length === 16 && !dateStr.includes("Z") && !dateStr.includes("+")) return dateStr;
+  
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return "";
+  
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
 
 export default function AdminInventoryPage() {
@@ -67,31 +80,46 @@ export default function AdminInventoryPage() {
 
     if (data) {
       // ==========================================
-      // DROP AUTO-EXPIRATION ENGINE
+      // DROP AUTO-EXPIRATION ENGINE (Bulletproofed)
       // ==========================================
       const now = new Date().getTime();
-      const expiredDrops = data.filter((p: Product) => 
-        p.is_drop && p.release_date && new Date(p.release_date).getTime() <= now
-      );
+      const expiredDrops = data.filter((p: Product) => {
+        if (!p.is_drop) return false;
+        if (!p.release_date) return true; // It's a drop but has no date -> BROKEN, expire it.
+        
+        const dropTime = new Date(p.release_date).getTime();
+        if (isNaN(dropTime)) return true; // The date format in DB is broken -> Expire it.
+        if (dropTime <= now) return true; // Time has passed -> Expire it.
+        
+        return false; // Time is still in the future, keep it as a drop.
+      });
 
       if (expiredDrops.length > 0) {
-        // Silently update all expired drops in the database
-        await Promise.all(expiredDrops.map(p => 
-          supabase.from("products").update({
+        let itemsUpdated = false;
+        
+        // Cleanly disable the expired or broken drops one by one
+        for (const p of expiredDrops) {
+          const { error: expError } = await supabase.from("products").update({
             is_drop: false,
             release_date: null,
             early_access_price: null,
-            is_new_arrival: false // Ensures it doesn't auto-flag as a new arrival
-          }).eq("id", p.id)
-        ));
-
-        // Re-fetch the clean, updated list
-        const { data: refreshedData } = await supabase
-          .from("products")
-          .select("*")
-          .order("created_at", { ascending: false });
+            is_new_arrival: false // Ensures it doesn't default back to New
+          }).eq("id", p.id);
           
-        if (refreshedData) setProducts(refreshedData);
+          if (!expError) itemsUpdated = true;
+          else console.error("Failed to expire drop:", p.id, expError);
+        }
+
+        // Re-fetch the clean, updated list if we changed anything
+        if (itemsUpdated) {
+          const { data: refreshedData } = await supabase
+            .from("products")
+            .select("*")
+            .order("created_at", { ascending: false });
+          if (refreshedData) setProducts(refreshedData);
+        } else {
+          setProducts(data);
+        }
       } else {
         setProducts(data);
       }
@@ -166,7 +194,7 @@ export default function AdminInventoryPage() {
   };
 
   // ==========================================
-  // IMAGE LOGIC & AI BACKGROUND REMOVAL (WATERFALL ENGINE)
+  // IMAGE LOGIC & AI BACKGROUND REMOVAL
   // ==========================================
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
@@ -214,15 +242,13 @@ export default function AdminInventoryPage() {
           return new File([blob], newName, { type: 'image/png' });
         } 
         
-        // 402 means payment required / out of credits. 429 means too many requests.
         if (response.status === 402 || response.status === 429 || response.status === 403) {
           console.warn(`Key ${i + 1} exhausted. Failing over to next key...`);
           continue; 
         }
 
-        const text = await response.text();
-        console.error("Remove BG Error:", text);
-        alert("Could not remove the background. The AI might not detect a clear subject. Please try another image.");
+        console.error("Remove BG Error:", await response.text());
+        alert("Background removal failed. The AI couldn't detect a clear subject. Please try a different image.");
         return null;
 
       } catch (error) {
@@ -241,12 +267,10 @@ export default function AdminInventoryPage() {
     const processedFile = await removeBackgroundWithRotation(fileToProcess);
     
     if (processedFile) {
-      // Replace old file with transparent file
       const updatedFiles = [...newImageFiles];
       updatedFiles[index] = processedFile;
       setNewImageFiles(updatedFiles);
 
-      // Replace preview
       const updatedPreviews = [...previewUrls];
       updatedPreviews[index] = URL.createObjectURL(processedFile);
       setPreviewUrls(updatedPreviews);
@@ -265,7 +289,6 @@ export default function AdminInventoryPage() {
     setNewImageFiles(prev => prev.filter((_, index) => index !== indexToRemove));
     setPreviewUrls(prev => prev.filter((_, index) => index !== indexToRemove));
   };
-  // --------------------------
 
   const openNewForm = () => {
     setFormData(emptyProduct);
@@ -291,6 +314,31 @@ export default function AdminInventoryPage() {
 
     const productToSave = { ...formData };
 
+    // ==========================================
+    // DROP SAFETY ENGINE
+    // ==========================================
+    if (productToSave.is_drop) {
+      if (!productToSave.early_access_price || !productToSave.release_date) {
+        alert("Please provide both an Early Access Price and an Official Release Time.");
+        setSaving(false);
+        return;
+      }
+      
+      const dropTime = new Date(productToSave.release_date).getTime();
+      const rightNow = new Date().getTime();
+      
+      if (dropTime <= rightNow) {
+        alert("The release time must be in the future! If you set a time in the past, the system will instantly expire it.");
+        setSaving(false);
+        return;
+      }
+      
+      productToSave.release_date = new Date(productToSave.release_date).toISOString();
+    } else {
+      productToSave.release_date = null;
+      productToSave.early_access_price = null;
+    }
+
     if (newImageFiles.length > 0) {
       const uploadedUrls: string[] = [];
       for (const file of newImageFiles) {
@@ -306,6 +354,8 @@ export default function AdminInventoryPage() {
             .from("product_images")
             .getPublicUrl(fileName);
           uploadedUrls.push(publicUrlData.publicUrl);
+        } else {
+          console.error("Image Upload Error:", uploadError);
         }
       }
       productToSave.images = [...productToSave.images, ...uploadedUrls];
@@ -315,13 +365,30 @@ export default function AdminInventoryPage() {
       productToSave.slug = productToSave.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
     }
 
-    if (!productToSave.release_date) productToSave.release_date = null;
     productToSave.in_stock = productToSave.stock > 0;
 
-    if (productToSave.id) {
-      await supabase.from("products").update(productToSave).eq("id", productToSave.id);
+    // ==========================================
+    // DATABASE SAVING (With Strict Error Alerts)
+    // ==========================================
+    // Strip out id and created_at before sending to DB to avoid Postgres conflicts
+    const { id, created_at, ...payloadToSave } = productToSave;
+
+    if (id) {
+      const { error } = await supabase.from("products").update(payloadToSave).eq("id", id);
+      if (error) {
+        alert("Database Error while Updating: " + error.message);
+        console.error(error);
+        setSaving(false);
+        return;
+      }
     } else {
-      await supabase.from("products").insert([productToSave]);
+      const { error } = await supabase.from("products").insert([payloadToSave]);
+      if (error) {
+        alert("Database Error while Creating: " + error.message);
+        console.error(error);
+        setSaving(false);
+        return;
+      }
     }
 
     await fetchProducts(); 
@@ -473,7 +540,6 @@ export default function AdminInventoryPage() {
                       {/* Hover Controls */}
                       <div className="absolute inset-0 bg-black/60 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
                         
-                        {/* THE MAGIC WAND: Remove BG specifically for this image */}
                         <button 
                           type="button" 
                           onClick={() => executeBackgroundRemoval(idx)}
@@ -660,11 +726,11 @@ export default function AdminInventoryPage() {
                       <div className="pt-2 space-y-4">
                         <div>
                           <label className="block text-[9px] uppercase tracking-widest text-gray-400 mb-2">Early Access Price (₦)</label>
-                          <input type="number" name="early_access_price" value={formData.early_access_price || ""} onChange={handleInputChange} className="w-full bg-transparent border-b border-gray-700 h-10 outline-none focus:border-white font-mono text-sm text-white rounded-none" />
+                          <input required={formData.is_drop} type="number" name="early_access_price" value={formData.early_access_price || ""} onChange={handleInputChange} className="w-full bg-transparent border-b border-gray-700 h-10 outline-none focus:border-white font-mono text-sm text-white rounded-none" />
                         </div>
                         <div>
                           <label className="block text-[9px] uppercase tracking-widest text-gray-400 mb-2">Official Release Time</label>
-                          <input type="datetime-local" name="release_date" value={formData.release_date ? formData.release_date.slice(0, 16) : ""} onChange={handleInputChange} className="w-full bg-transparent border-b border-gray-700 h-10 outline-none focus:border-white text-xs text-white rounded-none" />
+                          <input required={formData.is_drop} type="datetime-local" name="release_date" value={getLocalDatetime(formData.release_date)} onChange={handleInputChange} className="w-full bg-transparent border-b border-gray-700 h-10 outline-none focus:border-white text-xs text-white rounded-none" />
                         </div>
                       </div>
                     </div>
