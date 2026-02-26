@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-// THE 3 LUXURY SLIDES
+// THE 5 LUXURY SLIDES
 const SLIDES = [
   {
     id: 1,
@@ -15,6 +15,24 @@ const SLIDES = [
     cta: "Shop Diamonds",
     link: "/shop/Diamond",
     align: "center"
+  },
+  {
+    id: 4,
+    src: "/watchesheroslider.png",
+    title: "Master The Time.",
+    subtitle: "Exclusive luxury timepieces crafted for the elite.",
+    cta: "Shop Watches",
+    link: "/shop/Watches",
+    align: "left"
+  },
+  {
+    id: 5,
+    src: "/eyeglassesheroslider.png",
+    title: "Visionary Frames.",
+    subtitle: "Designer eyewear to complete your signature look.",
+    cta: "Shop Eyewear",
+    link: "/shop/Eyeglasses",
+    align: "right"
   },
   {
     id: 2,
@@ -33,7 +51,7 @@ const SLIDES = [
     cta: "Discover Perfumes",
     link: "/shop/Perfumes",
     align: "right"
-  }
+  },
 ];
 
 export default function HeroSlider() {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import ProductImage from "./ProductImage";
 import { ShoppingBag, Check } from "lucide-react"; 
 import { useCart } from "../context/CartContext"; 
 
@@ -81,7 +81,7 @@ export default function ProductCard({ product }: ProductProps) {
         <Link href={`/product/${product.id}`} className="block h-full w-full">
           
           {/* Main Image (Fades out and zooms slowly on hover) */}
-          <Image
+          <ProductImage
             src={mainImage}
             alt={product.name}
             fill
@@ -93,7 +93,7 @@ export default function ProductCard({ product }: ProductProps) {
           
           {/* Secondary Image (Fades in and zooms slowly on hover) */}
           {hoverImage && (
-            <Image
+            <ProductImage
               src={hoverImage}
               alt={product.name}
               fill

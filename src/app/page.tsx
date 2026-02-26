@@ -17,8 +17,8 @@ export default function Home() {
       <HeroSlider />
       <NewArrivals />
       <BrandSection />
-      <Hero />
       <OnSale />
+      <Hero />
       <Bestsellers />
       <SundayDrop />
       <GiftFinder />

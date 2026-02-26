@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import ProductImage from "./ProductImage";
 import { ArrowRight, RefreshCw, Gift, Check } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
@@ -86,7 +86,7 @@ export default function GiftFinder() {
        query = query.eq('style', criteria.style);
     }
 
-    const { data } = await query.limit(4);
+    const { data } = await query.gt("stock", 0).limit(4);
 
     if (data) setResults(data);
     setLoading(false);
@@ -186,11 +186,11 @@ export default function GiftFinder() {
                 {results.map((product) => (
                   <div key={product.id} className="group bg-white p-3 rounded-xl shadow-sm hover:shadow-lg transition-all text-left border border-gray-100">
                     <div className="relative aspect-square bg-gray-50 mb-3 overflow-hidden rounded-lg">
-                       <Image 
-                         src={product.images[0]} 
-                         alt={product.name} 
-                         fill 
-                         className="object-cover transition-transform duration-700 group-hover:scale-105" 
+                       <ProductImage
+                         src={product.images?.[0]}
+                         alt={product.name}
+                         fill
+                         className="object-cover transition-transform duration-700 group-hover:scale-105"
                        />
                     </div>
                     <div className="space-y-1">

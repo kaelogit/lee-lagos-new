@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { supabase } from "../../../lib/supabase";
 import { Plus, X, Edit2, Clock, Star, Sparkles, UploadCloud, Trash2, Tag, Wand2, Loader2 } from "lucide-react";
 import Image from "next/image";
+import ProductImage from "../../../components/ProductImage";
 
 type Product = {
   id?: string;
@@ -30,9 +31,9 @@ type Product = {
 
 const emptyProduct: Product = {
   name: "", slug: "", description: "", price: 0,
-  on_sale: false, sale_price: null, stock: 1, in_stock: true,
+  on_sale: false, sale_price: null, stock: 0, in_stock: false,
   category: "", subcategory: "", images: [],
-  is_bestseller: false, is_new_arrival: false, 
+  is_bestseller: false, is_new_arrival: false,
   is_drop: false, release_date: "", early_access_price: null,
   gender: "Unisex", style: "Classic"
 };
@@ -95,8 +96,9 @@ export default function AdminInventoryPage() {
       });
 
       if (expiredDrops.length > 0) {
+        const expiredIds = new Set(expiredDrops.map((p: Product) => p.id));
         let itemsUpdated = false;
-        
+
         // Cleanly disable the expired or broken drops one by one
         for (const p of expiredDrops) {
           const { error: expError } = await supabase.from("products").update({
@@ -105,12 +107,12 @@ export default function AdminInventoryPage() {
             early_access_price: null,
             is_new_arrival: false // Ensures it doesn't default back to New
           }).eq("id", p.id);
-          
+
           if (!expError) itemsUpdated = true;
           else console.error("Failed to expire drop:", p.id, expError);
         }
 
-        // Re-fetch the clean, updated list if we changed anything
+        // Re-fetch the clean list if DB updates succeeded; otherwise show correct UI anyway (optimistic)
         if (itemsUpdated) {
           const { data: refreshedData } = await supabase
             .from("products")
@@ -118,7 +120,13 @@ export default function AdminInventoryPage() {
             .order("created_at", { ascending: false });
           if (refreshedData) setProducts(refreshedData);
         } else {
-          setProducts(data);
+          // DB updates failed (e.g. RLS). Still show expired products as normal so the list is correct.
+          const merged = data.map((p: Product) =>
+            expiredIds.has(p.id)
+              ? { ...p, is_drop: false, release_date: null, early_access_price: null, is_new_arrival: false }
+              : p
+          );
+          setProducts(merged);
         }
       } else {
         setProducts(data);
@@ -300,7 +308,21 @@ export default function AdminInventoryPage() {
   };
 
   const openEditForm = (product: Product) => {
-    setFormData(product);
+    // If this product is still marked as a drop but its release time has passed, treat it as normal
+    // so the form doesn't block saving and the user can turn it into a new drop with a future date.
+    let normalized = { ...product };
+    if (product.is_drop && product.release_date) {
+      const dropTime = new Date(product.release_date).getTime();
+      if (!isNaN(dropTime) && dropTime <= Date.now()) {
+        normalized = {
+          ...product,
+          is_drop: false,
+          release_date: null,
+          early_access_price: null,
+        };
+      }
+    }
+    setFormData(normalized);
     setNewImageFiles([]);
     setPreviewUrls([]);
     setIsCustomCategory(false);
@@ -396,100 +418,103 @@ export default function AdminInventoryPage() {
     setSaving(false);
   };
 
-  if (loading) return null;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[200px]">
+        <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-lee-grey animate-pulse">
+          Loading inventory...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="animate-in fade-in duration-500">
-      
       {/* HEADER */}
-      <div className="flex items-end justify-between mb-12 border-b border-gray-100 pb-4">
-        <div>
-          <h1 className="text-xs font-bold uppercase tracking-[0.2em] text-black mb-1">
-            Inventory Room
-          </h1>
-          <p className="text-[10px] uppercase tracking-widest text-gray-400">
-            {products.length} Pieces
-          </p>
+      <div className="mb-10">
+        <div className="flex items-end justify-between border-b border-lee-light-grey pb-4">
+          <div>
+            <h1 className="text-xs font-bold uppercase tracking-[0.2em] text-lee-black mb-1">
+              Inventory Room
+            </h1>
+            <p className="text-[10px] uppercase tracking-widest text-lee-grey">
+              {products.length} Pieces
+            </p>
+          </div>
+          <button
+            onClick={openNewForm}
+            className="flex items-center gap-2 bg-lee-black text-white px-6 py-3 text-[9px] font-bold uppercase tracking-widest hover:bg-lee-black/90 transition-colors rounded-sm"
+          >
+            <Plus size={14} /> Add Piece
+          </button>
         </div>
-        <button 
-          onClick={openNewForm}
-          className="flex items-center gap-2 bg-black text-white px-6 py-3 text-[9px] font-bold uppercase tracking-widest hover:bg-gray-800 transition-colors rounded-sm shadow-sm hover:shadow-md"
-        >
-          <Plus size={14} /> Add Piece
-        </button>
       </div>
 
       {/* PRODUCT LIST */}
       <div className="grid grid-cols-1 gap-4">
         {products.map((product) => (
-          <div key={product.id} className="bg-[#fdfdfd] border border-gray-100 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 group hover:border-black transition-colors rounded-sm">
+          <div key={product.id} className="bg-lee-white border border-lee-light-grey p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 group hover:border-lee-black/20 transition-colors rounded-sm">
             <div className="flex items-center gap-6">
-              <div className="relative w-16 h-16 bg-[#fcfcfc] overflow-hidden shrink-0 rounded-sm">
-                {product.images[0] ? (
-                  <Image src={product.images[0]} alt={product.name} fill className="object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-500" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gray-50 text-[8px] text-gray-400 uppercase tracking-widest">No Img</div>
-                )}
+              <div className="relative w-16 h-16 bg-lee-light-grey overflow-hidden shrink-0 rounded-sm">
+                <ProductImage
+                  src={product.images?.[0]}
+                  alt={product.name}
+                  fill
+                  className="object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-500"
+                />
               </div>
               <div>
-                <h3 className="text-sm font-bold uppercase tracking-widest text-black mb-1 truncate max-w-[200px] md:max-w-[300px]">{product.name}</h3>
+                <h3 className="text-sm font-bold uppercase tracking-widest text-lee-black mb-1 truncate max-w-[200px] md:max-w-[300px]">{product.name}</h3>
                 <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400 mr-2">{product.category}</p>
-                  
-                  {/* Status Badges */}
-                  {product.is_drop && <span className="text-[8px] bg-black text-white px-2 py-0.5 uppercase tracking-widest font-bold flex items-center gap-1"><span className="w-1 h-1 bg-red-500 rounded-full animate-pulse"></span> Drop</span>}
-                  {product.on_sale && <span className="text-[8px] bg-red-50 text-red-600 border border-red-100 px-2 py-0.5 uppercase tracking-widest font-bold">Sale</span>}
+                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-lee-grey mr-2">{product.category}</p>
+                  {product.is_drop && <span className="badge-black flex items-center gap-1"><span className="w-1 h-1 bg-lee-red rounded-full animate-pulse"></span> Drop</span>}
+                  {product.on_sale && <span className="text-[8px] bg-red-50 text-lee-red border border-red-100 px-2 py-0.5 uppercase tracking-widest font-bold">Sale</span>}
                   {product.is_bestseller && <span className="text-[8px] bg-yellow-50 text-yellow-700 border border-yellow-100 px-2 py-0.5 uppercase tracking-widest font-bold">Bestseller</span>}
                   {product.is_new_arrival && <span className="text-[8px] bg-blue-50 text-blue-600 border border-blue-100 px-2 py-0.5 uppercase tracking-widest font-bold">New</span>}
-                  {product.stock <= 0 && <span className="text-[8px] bg-red-600 text-white px-2 py-0.5 uppercase tracking-widest font-bold">Out of Stock</span>}
+                  {product.stock <= 0 && <span className="text-[8px] bg-lee-red text-white px-2 py-0.5 uppercase tracking-widest font-bold">Out of Stock</span>}
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-between md:justify-end gap-8 border-t border-gray-100 pt-4 md:border-t-0 md:pt-0">
+            <div className="flex items-center justify-between md:justify-end gap-8 border-t border-lee-light-grey pt-4 md:border-t-0 md:pt-0">
               <div className="text-left md:text-right w-16">
-                <p className="text-[9px] uppercase tracking-widest text-gray-400 mb-1">Stock</p>
-                <p className={`font-mono text-sm ${product.stock <= 0 ? 'text-red-600 font-bold' : 'text-black'}`}>{product.stock}</p>
+                <p className="text-[9px] uppercase tracking-widest text-lee-grey mb-1">Stock</p>
+                <p className={`font-mono text-sm ${product.stock <= 0 ? "text-lee-red font-bold" : "text-lee-black"}`}>{product.stock}</p>
               </div>
-              
-              {/* SMART PRICING DISPLAY */}
               <div className="text-right w-24">
-                <p className="text-[9px] uppercase tracking-widest text-gray-400 mb-1">Price</p>
+                <p className="text-[9px] uppercase tracking-widest text-lee-grey mb-1">Price</p>
                 <div className="flex flex-col items-end">
                   {product.on_sale && product.sale_price ? (
                     <>
-                      <span className="font-mono text-[10px] text-gray-400 line-through">₦{product.price.toLocaleString()}</span>
-                      <span className="font-mono text-sm text-red-600 font-bold">₦{product.sale_price.toLocaleString()}</span>
+                      <span className="font-mono text-[10px] text-lee-grey line-through">₦{product.price.toLocaleString()}</span>
+                      <span className="font-mono text-sm text-lee-red font-bold">₦{product.sale_price.toLocaleString()}</span>
                     </>
                   ) : product.is_drop && product.early_access_price ? (
                     <>
-                      <span className="font-mono text-[10px] text-gray-400 line-through">₦{product.price.toLocaleString()}</span>
-                      <span className="font-mono text-sm text-black font-bold">₦{product.early_access_price.toLocaleString()}</span>
+                      <span className="font-mono text-[10px] text-lee-grey line-through">₦{product.price.toLocaleString()}</span>
+                      <span className="font-mono text-sm text-lee-black font-bold">₦{product.early_access_price.toLocaleString()}</span>
                     </>
                   ) : (
-                    <span className="font-mono text-sm text-black">₦{product.price.toLocaleString()}</span>
+                    <span className="font-mono text-sm text-lee-black">₦{product.price.toLocaleString()}</span>
                   )}
                 </div>
               </div>
-
-              {/* ACTION BUTTONS (EDIT & DELETE) */}
               <div className="flex items-center gap-2">
-                <button 
+                <button
                   onClick={() => openEditForm(product)}
-                  className="w-10 h-10 flex items-center justify-center border border-gray-200 text-black hover:bg-black hover:text-white transition-colors shrink-0 rounded-sm"
+                  className="w-10 h-10 flex items-center justify-center border border-lee-light-grey text-lee-black hover:bg-lee-black hover:text-white hover:border-lee-black transition-colors shrink-0 rounded-sm"
                   title="Edit Piece"
                 >
                   <Edit2 size={14} />
                 </button>
-                <button 
+                <button
                   onClick={() => product.id && deleteProduct(product.id)}
-                  className="w-10 h-10 flex items-center justify-center border border-red-100 text-red-500 hover:bg-red-600 hover:text-white hover:border-red-600 transition-colors shrink-0 rounded-sm"
+                  className="w-10 h-10 flex items-center justify-center border border-red-100 text-lee-red hover:bg-lee-red hover:text-white hover:border-lee-red transition-colors shrink-0 rounded-sm"
                   title="Delete Piece"
                 >
                   <Trash2 size={14} />
                 </button>
               </div>
-
             </div>
           </div>
         ))}
@@ -497,14 +522,13 @@ export default function AdminInventoryPage() {
 
       {/* FULL-SCREEN SLIDE-OUT FORM MODAL */}
       {isFormOpen && (
-        <div className="fixed inset-0 z-[100] flex justify-end bg-black/40 backdrop-blur-sm transition-opacity duration-300">
-          <div className="bg-[#fcfcfc] w-full max-w-2xl h-full overflow-y-auto shadow-2xl animate-in slide-in-from-right duration-500 flex flex-col">
-            
-            <div className="p-8 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-20 shadow-sm">
-              <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-black">
+        <div className="fixed inset-0 z-[100] flex justify-end bg-lee-black/40 backdrop-blur-sm transition-opacity duration-300">
+          <div className="bg-lee-white w-full max-w-2xl h-full overflow-y-auto shadow-2xl animate-in slide-in-from-right duration-500 flex flex-col">
+            <div className="p-8 border-b border-lee-light-grey flex items-center justify-between sticky top-0 bg-lee-white z-20">
+              <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-lee-black">
                 {formData.id ? "Edit Masterpiece" : "Add New Piece"}
               </h2>
-              <button type="button" onClick={() => setIsFormOpen(false)} className="w-10 h-10 bg-gray-100 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-200 hover:text-black transition-colors">
+              <button type="button" onClick={() => setIsFormOpen(false)} className="w-10 h-10 bg-lee-light-grey flex items-center justify-center rounded-sm text-lee-grey hover:bg-lee-black hover:text-white transition-colors">
                 <X size={18} strokeWidth={2} />
               </button>
             </div>
@@ -524,7 +548,7 @@ export default function AdminInventoryPage() {
                   {/* EXISTING IMAGES */}
                   {formData.images.map((imgUrl, idx) => (
                     <div key={`existing-${idx}`} className="relative aspect-[3/4] bg-gray-50 border border-gray-200 group overflow-hidden rounded-sm shadow-sm">
-                      <Image src={imgUrl} alt="Product view" fill className="object-cover" />
+                      <ProductImage src={imgUrl} alt="Product view" fill className="object-cover" />
                       <button type="button" onClick={() => removeExistingImage(idx)} className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                         <Trash2 size={20} className="text-white drop-shadow-md" />
                       </button>
@@ -742,14 +766,14 @@ export default function AdminInventoryPage() {
             </form>
 
             {/* FIXED FOOTER BUTTON */}
-            <div className="p-8 border-t border-gray-200 bg-white sticky bottom-0 z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-              <button 
+            <div className="p-8 border-t border-lee-light-grey bg-lee-white sticky bottom-0 z-20">
+              <button
                 type="submit"
                 form="product-form"
                 disabled={saving}
-                className="w-full bg-black text-white h-14 flex items-center justify-center uppercase font-bold tracking-[0.2em] text-[10px] hover:bg-gray-800 transition-colors disabled:opacity-70 rounded-sm shadow-md hover:shadow-lg"
+                className="w-full bg-lee-black text-white h-14 flex items-center justify-center uppercase font-bold tracking-[0.2em] text-[10px] hover:bg-lee-black/90 transition-colors disabled:opacity-70 rounded-sm"
               >
-                {saving ? "Encrypting & Saving..." : formData.id ? "Update Masterpiece" : "Publish to Store"}
+                {saving ? "Saving..." : formData.id ? "Update Masterpiece" : "Publish to Store"}
               </button>
             </div>
 

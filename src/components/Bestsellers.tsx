@@ -19,6 +19,7 @@ export default function Bestsellers() {
         .from("products")
         .select("*")
         .eq("is_bestseller", true)
+        .gt("stock", 0)
         .order("created_at", { ascending: false })
         .limit(8); // Pulling exactly 8 items makes a perfect 2-row grid on desktop
 

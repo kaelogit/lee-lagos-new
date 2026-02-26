@@ -31,6 +31,7 @@ function ShopContent() {
     let query = supabase
       .from("products")
       .select("*")
+      .gt("stock", 0)
       .order("created_at", { ascending: false })
       .range(from, to);
 

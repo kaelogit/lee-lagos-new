@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import Image from "next/image";
+import ProductImage from "../../../components/ProductImage";
 import Link from "next/link";
 import { supabase } from "../../../lib/supabase";
 import { 
@@ -67,6 +67,7 @@ export default function ProductClientPage({ id }: { id: string }) {
         .select("*")
         .eq("category", mainProduct.category)
         .neq("id", id)
+        .gt("stock", 0)
         .limit(8);
 
       if (related) setRelatedProducts(related);
@@ -209,13 +210,21 @@ export default function ProductClientPage({ id }: { id: string }) {
             {/* PHOTOS */}
             <div className="space-y-4 h-fit">
               <div className="relative aspect-square bg-[#fcfcfc] overflow-hidden rounded-sm">
-                <Image src={product.images[activeImage] || "/placeholder.jpg"} alt={product.name} fill className="object-cover" priority />
+                <ProductImage
+                  src={product.images[activeImage]}
+                  alt={product.name}
+                  fill
+                  className="object-cover"
+                  priority
+                />
               </div>
-              {product.images.length > 1 && (
+              {product.images?.length > 1 && (
                 <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                   {product.images.map((img: string, idx: number) => (
                     <button key={idx} onClick={() => setActiveImage(idx)} className={`relative w-16 h-16 flex-shrink-0 bg-[#fcfcfc] rounded-sm overflow-hidden transition-all border-2 ${activeImage === idx ? "border-black" : "border-transparent hover:border-gray-300"}`}>
-                      <div className="absolute inset-0"><Image src={img} alt="Thumbnail" fill className="object-cover" /></div>
+                      <div className="absolute inset-0">
+                        <ProductImage src={img} alt="Thumbnail" fill className="object-cover" />
+                      </div>
                     </button>
                   ))}
                 </div>

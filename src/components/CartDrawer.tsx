@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useCart } from "../context/CartContext";
 import { X, Trash2, ArrowRight, ShoppingBag, Clock } from "lucide-react";
-import Image from "next/image";
+import ProductImage from "./ProductImage";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -111,11 +111,11 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                   
                   {/* Item Image */}
                   <Link href={`/product/${item.id}`} onClick={closeDrawer} className="relative w-20 h-28 bg-[#fcfcfc] overflow-hidden shrink-0 block rounded-lg">
-                    <Image 
-                      src={item.image || "/placeholder.jpg"} 
-                      alt={item.name} 
-                      fill 
-                      className="object-cover group-hover:scale-105 transition-transform duration-500 mix-blend-multiply" 
+                    <ProductImage
+                      src={item.image}
+                      alt={item.name}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500 mix-blend-multiply"
                     />
                   </Link>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Image from "next/image";
+import ProductImage from "../../components/ProductImage";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Lock, ArrowLeft, Clock } from "lucide-react";
@@ -97,6 +97,27 @@ export default function CheckoutClient() {
         .insert(itemsToInsert);
 
       if (itemsError) throw itemsError;
+
+      // 2b. Decrement stock for each product (group by product in case of multiple lines)
+      const quantityByProduct: Record<string, number> = {};
+      for (const item of cartItems) {
+        const id = item.id;
+        quantityByProduct[id] = (quantityByProduct[id] ?? 0) + item.quantity;
+      }
+      for (const [productId, qty] of Object.entries(quantityByProduct)) {
+        const { data: product } = await supabase
+          .from("products")
+          .select("stock")
+          .eq("id", productId)
+          .single();
+        if (product) {
+          const newStock = Math.max(0, (product.stock ?? 0) - qty);
+          await supabase
+            .from("products")
+            .update({ stock: newStock, in_stock: newStock > 0 })
+            .eq("id", productId);
+        }
+      }
 
       // ==========================================
       // 3. SEND THE LUXURY CONFIRMATION EMAIL
@@ -253,7 +274,7 @@ export default function CheckoutClient() {
                     <div key={item.id} className="flex gap-5 group">
                       
                       <div className="relative w-20 h-28 bg-[#fcfcfc] shrink-0 rounded-lg overflow-hidden">
-                        <Image src={item.image || "/placeholder.jpg"} alt={item.name} fill className="object-cover mix-blend-multiply" />
+                        <ProductImage src={item.image} alt={item.name} fill className="object-cover mix-blend-multiply" />
                       </div>
 
                       <div className="flex-1 flex flex-col py-1">

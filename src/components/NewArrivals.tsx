@@ -23,6 +23,7 @@ export default function NewArrivals() {
         .from("products")
         .select("*")
         .eq("is_new_arrival", true)
+        .gt("stock", 0)
         .order("created_at", { ascending: false }); // Newest first
 
       // 2. If they clicked a specific tab, filter by that category

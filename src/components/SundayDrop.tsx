@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Image from "next/image";
+import ProductImage from "./ProductImage";
 import Link from "next/link";
 import { Lock, ShoppingBag, Eye, ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { supabase } from "../lib/supabase";
@@ -30,6 +30,7 @@ export default function SundayDrop() {
         .from('products')
         .select('*')
         .eq('is_drop', true)
+        .gt('stock', 0)
         .limit(6);
       
       if (data && data.length > 0) {
@@ -175,12 +176,12 @@ export default function SundayDrop() {
               >
                 {/* IMAGE CONTAINER */}
                 <div className="relative aspect-[4/5] overflow-hidden bg-white">
-                  <Image
-                    src={item.images[0] || "/placeholder.jpg"}
+                  <ProductImage
+                    src={item.images?.[0]}
                     alt={item.name}
                     fill
                     className={`object-cover transition-all duration-[1500ms] ease-out ${
-                      isRevealed ? 'scale-100 blur-0' : 'scale-125 blur-2xl opacity-40'
+                      isRevealed ? "scale-100 blur-0" : "scale-125 blur-2xl opacity-40"
                     }`}
                   />
 

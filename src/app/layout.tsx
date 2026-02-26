@@ -61,7 +61,7 @@ export default function RootLayout({
         
         {/* WRAP THE APP IN THE CART PROVIDER */}
         <CartProvider>
-          <main className="min-h-screen pt-4">
+          <main className="pt-4">
             {children}
           </main>
         </CartProvider>

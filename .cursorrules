@@ -1,0 +1,10 @@
+# Database Truth
+- Before you write, edit, or suggest any code that interacts with the database (Supabase), you MUST read and analyze the `src/types/supabase.ts` file.
+- Never guess or assume table names, column names, or data types. Always look at the exact structure inside `src/types/supabase.ts` to be 100% sure.
+- Make sure all database queries match these types exactly to avoid errors. If a column is not in that file, do not try to use it.
+
+# Code & Communication Style
+- Always use normal, plain English that everybody easily understands.
+- Drop the technical jargon and speak plainly. Never use tech-savvy words, institutional words, or cult jargon in your explanations, variable names, or code comments. Keep it clean.
+- Always perform a full audit of the code you write to make sure nothing is missing and no errors are left behind.
+- Keep the code clean, fast, and easy to read.

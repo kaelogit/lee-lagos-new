@@ -70,6 +70,7 @@ export default function CategoryPage() {
       .from("products")
       .select("*")
       .ilike("category", categoryName)
+      .gt("stock", 0)
       .range(from, to);
 
     if (targetSub !== "All") {
