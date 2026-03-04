@@ -53,6 +53,7 @@ const getLocalDatetime = (dateStr: string | null) => {
 export default function AdminInventoryPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
   
   // Form State
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -418,6 +419,16 @@ export default function AdminInventoryPage() {
     setSaving(false);
   };
 
+  const filteredProducts = products.filter((p) => {
+    const q = searchTerm.toLowerCase().trim();
+    if (!q) return true;
+    return (
+      p.name.toLowerCase().includes(q) ||
+      p.category.toLowerCase().includes(q) ||
+      (p.subcategory && p.subcategory.toLowerCase().includes(q))
+    );
+  });
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
@@ -432,7 +443,7 @@ export default function AdminInventoryPage() {
     <div className="animate-in fade-in duration-500">
       {/* HEADER */}
       <div className="mb-10">
-        <div className="flex items-end justify-between border-b border-lee-light-grey pb-4">
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between border-b border-lee-light-grey pb-4">
           <div>
             <h1 className="text-xs font-bold uppercase tracking-[0.2em] text-lee-black mb-1">
               Inventory Room
@@ -441,18 +452,27 @@ export default function AdminInventoryPage() {
               {products.length} Pieces
             </p>
           </div>
-          <button
-            onClick={openNewForm}
-            className="flex items-center gap-2 bg-lee-black text-white px-6 py-3 text-[9px] font-bold uppercase tracking-widest hover:bg-lee-black/90 transition-colors rounded-sm"
-          >
-            <Plus size={14} /> Add Piece
-          </button>
+          <div className="flex flex-col md:flex-row gap-3 md:items-center">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by name or category..."
+              className="w-full md:w-72 bg-lee-white border border-lee-light-grey h-10 px-3 text-xs uppercase tracking-widest text-lee-black outline-none focus:border-lee-black transition-colors rounded-sm"
+            />
+            <button
+              onClick={openNewForm}
+              className="flex items-center justify-center gap-2 bg-lee-black text-white px-6 py-3 text-[9px] font-bold uppercase tracking-widest hover:bg-lee-black/90 transition-colors rounded-sm"
+            >
+              <Plus size={14} /> Add Piece
+            </button>
+          </div>
         </div>
       </div>
 
       {/* PRODUCT LIST */}
       <div className="grid grid-cols-1 gap-4">
-        {products.map((product) => (
+        {filteredProducts.map((product) => (
           <div key={product.id} className="bg-lee-white border border-lee-light-grey p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 group hover:border-lee-black/20 transition-colors rounded-sm">
             <div className="flex items-center gap-6">
               <div className="relative w-16 h-16 bg-lee-light-grey overflow-hidden shrink-0 rounded-sm">

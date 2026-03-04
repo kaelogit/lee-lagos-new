@@ -100,7 +100,6 @@ export default function Navbar() {
         .from("products")
         .select("id, name, price, sale_price, on_sale, images")
         .ilike("name", `%${searchQuery.trim()}%`)
-        .gt("stock", 0)
         .limit(5);
 
       if (data && !error) {

@@ -86,7 +86,7 @@ export default function GiftFinder() {
        query = query.eq('style', criteria.style);
     }
 
-    const { data } = await query.gt("stock", 0).limit(4);
+    const { data } = await query.limit(4);
 
     if (data) setResults(data);
     setLoading(false);

@@ -30,7 +30,6 @@ export default function SundayDrop() {
         .from('products')
         .select('*')
         .eq('is_drop', true)
-        .gt('stock', 0)
         .limit(6);
       
       if (data && data.length > 0) {

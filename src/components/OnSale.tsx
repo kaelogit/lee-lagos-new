@@ -17,7 +17,6 @@ export default function OnSale() {
         .from("products")
         .select("*")
         .eq("on_sale", true)
-        .gt("stock", 0)
         .order("created_at", { ascending: false })
         .limit(10); 
 

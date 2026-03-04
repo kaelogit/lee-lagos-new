@@ -67,7 +67,6 @@ export default function ProductClientPage({ id }: { id: string }) {
         .select("*")
         .eq("category", mainProduct.category)
         .neq("id", id)
-        .gt("stock", 0)
         .limit(8);
 
       if (related) setRelatedProducts(related);
@@ -176,6 +175,11 @@ export default function ProductClientPage({ id }: { id: string }) {
 
   if (loading) return <div className="h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div></div>;
   if (!product) return <div className="h-screen flex items-center justify-center font-bold tracking-widest uppercase">Piece not found.</div>;
+
+  const isSoldOut = !product.in_stock && !isDropActive;
+  const whatsappText = isSoldOut
+    ? `Hello Lee Lagos, I would like to *pre-order* the ${product.name}. It is currently showing as out of stock on your website. Please confirm availability, price and expected delivery time. Thank you!`
+    : `Hello Lee Lagos, I am interested in the ${product.name} (Qty: ${quantity}). Could you please send me a video of this soon as you're chanced so I can see the details? Thank you!`;
 
   return (
     <div className="bg-white min-h-screen">
@@ -301,12 +305,12 @@ export default function ProductClientPage({ id }: { id: string }) {
               {/* HELP & SHARE */}
               <div className="flex gap-2 mb-12">
                 <a 
-                  href={`https://wa.me/2349160003594?text=${encodeURIComponent(`Hello Lee Lagos, I am interested in the ${product.name} (Qty: ${quantity}). Could you please send me a video of this soon as you're chanced so I can see the details? Thank you!`)}`}
+                  href={`https://wa.me/2349160003594?text=${encodeURIComponent(whatsappText)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1 bg-white border border-gray-300 text-black h-14 flex items-center justify-center gap-3 uppercase font-bold tracking-widest text-xs hover:bg-gray-50 hover:border-black transition-all rounded-lg"
                 >
-                  <MessageCircle size={18} /> Request Video
+                  <MessageCircle size={18} /> {isSoldOut ? "Pre-Order via WhatsApp" : "Request Video"}
                 </a>
                 
                 <button 

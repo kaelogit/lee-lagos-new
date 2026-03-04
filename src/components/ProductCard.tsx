@@ -175,6 +175,12 @@ export default function ProductCard({ product }: ProductProps) {
             </span>
           )}
         </div>
+
+        {!product.in_stock && !isDropActive && (
+          <span className="mt-1 inline-block text-[10px] font-bold uppercase tracking-widest text-red-600">
+            Out of Stock
+          </span>
+        )}
       </div>
     </div>
   );
