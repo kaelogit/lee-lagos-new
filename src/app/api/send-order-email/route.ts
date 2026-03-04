@@ -72,8 +72,7 @@ export async function POST(request: Request) {
     `;
 
     const data = await resend.emails.send({
-      // IMPORTANT: Leave this exactly as 'onboarding@resend.dev' until you buy a domain name
-      from: 'Lee Lagos Orders <onboarding@resend.dev>', 
+      from: 'Lee Lagos Orders <orders@leelagos.com>',
       to: [email],
       replyTo: 'leelagos@gmail.com', // If they hit reply, it goes to your real email
       subject: `Order Confirmed! (#${orderReference}) - Lee Lagos`,
