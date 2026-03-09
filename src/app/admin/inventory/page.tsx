@@ -38,6 +38,16 @@ const emptyProduct: Product = {
   gender: "Unisex", style: "Classic"
 };
 
+const FIXED_CATEGORIES = [
+  "Watches",
+  "Moissanite",
+  "Diamond",
+  "Eyeglasses",
+  "Gold",
+  "Perfumes",
+  "Hustle X Lee",
+];
+
 // UTILITY: Safely format dates for the HTML datetime-local input
 const getLocalDatetime = (dateStr: string | null) => {
   if (!dateStr) return "";
@@ -67,7 +77,6 @@ export default function AdminInventoryPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Smart UI Toggles
-  const [isCustomCategory, setIsCustomCategory] = useState(false);
   const [isCustomSubcategory, setIsCustomSubcategory] = useState(false);
 
   useEffect(() => {
@@ -135,10 +144,6 @@ export default function AdminInventoryPage() {
     }
     setLoading(false);
   };
-
-  const availableCategories = Array.from(
-    new Set(products.map(p => p.category).filter(Boolean))
-  );
 
   const availableSubcategories = Array.from(
     new Set(
@@ -303,7 +308,6 @@ export default function AdminInventoryPage() {
     setFormData(emptyProduct);
     setNewImageFiles([]);
     setPreviewUrls([]);
-    setIsCustomCategory(availableCategories.length === 0);
     setIsCustomSubcategory(true); 
     setIsFormOpen(true);
   };
@@ -326,9 +330,30 @@ export default function AdminInventoryPage() {
     setFormData(normalized);
     setNewImageFiles([]);
     setPreviewUrls([]);
-    setIsCustomCategory(false);
     setIsCustomSubcategory(false);
     setIsFormOpen(true);
+  };
+
+  const handleDeleteSubcategory = async () => {
+    if (!formData.category || !formData.subcategory) return;
+    const confirmed = window.confirm(
+      `Are you sure you want to delete the subcategory "${formData.subcategory}" under "${formData.category}"?\n\n` +
+      `All products in this subcategory will be permanently deleted.`
+    );
+    if (!confirmed) return;
+
+    const { error } = await supabase
+      .from("products")
+      .delete()
+      .eq("category", formData.category)
+      .eq("subcategory", formData.subcategory);
+
+    if (error) {
+      alert("Error deleting subcategory and its products: " + error.message);
+    } else {
+      await fetchProducts();
+      setFormData((prev) => ({ ...prev, subcategory: "" }));
+    }
   };
 
   const saveProduct = async (e: React.FormEvent) => {
@@ -646,30 +671,48 @@ export default function AdminInventoryPage() {
                   <div>
                     <div className="flex justify-between items-end mb-2">
                       <label className="block text-[10px] uppercase tracking-widest text-gray-500">Category</label>
-                      {availableCategories.length > 0 && (
-                        <button type="button" onClick={() => setIsCustomCategory(!isCustomCategory)} className="text-[9px] uppercase tracking-widest text-blue-600 hover:text-black font-bold transition-colors">
-                          {isCustomCategory ? "Select Existing" : "+ Add New"}
-                        </button>
-                      )}
                     </div>
-                    {isCustomCategory || availableCategories.length === 0 ? (
-                      <input required type="text" name="category" value={formData.category} onChange={handleInputChange} placeholder="e.g. Watches" className="w-full bg-transparent border-b border-gray-300 h-10 outline-none focus:border-black text-sm text-black transition-colors rounded-none" />
-                    ) : (
-                      <select required name="category" value={formData.category} onChange={handleInputChange} className="w-full bg-transparent border-b border-gray-300 h-10 outline-none focus:border-black text-sm text-black appearance-none transition-colors rounded-none">
-                        <option value="" disabled>Select Category</option>
-                        {availableCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                      </select>
-                    )}
+                    <select
+                      required
+                      name="category"
+                      value={formData.category}
+                      onChange={handleInputChange}
+                      className="w-full bg-transparent border-b border-gray-300 h-10 outline-none focus:border-black text-sm text-black appearance-none transition-colors rounded-none"
+                    >
+                      <option value="" disabled>
+                        Select Category
+                      </option>
+                      {FIXED_CATEGORIES.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div>
                     <div className="flex justify-between items-end mb-2">
                       <label className="block text-[10px] uppercase tracking-widest text-gray-500">Subcategory</label>
-                      {availableSubcategories.length > 0 && (
-                        <button type="button" onClick={() => setIsCustomSubcategory(!isCustomSubcategory)} className="text-[9px] uppercase tracking-widest text-blue-600 hover:text-black font-bold transition-colors">
-                          {isCustomSubcategory ? "Select Existing" : "+ Add New"}
-                        </button>
-                      )}
+                      <div className="flex items-center gap-3">
+                        {availableSubcategories.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => setIsCustomSubcategory(!isCustomSubcategory)}
+                            className="text-[9px] uppercase tracking-widest text-blue-600 hover:text-black font-bold transition-colors"
+                          >
+                            {isCustomSubcategory ? "Select Existing" : "+ Add New"}
+                          </button>
+                        )}
+                        {formData.subcategory && (
+                          <button
+                            type="button"
+                            onClick={handleDeleteSubcategory}
+                            className="text-[9px] uppercase tracking-widest text-red-600 hover:text-red-800 font-bold transition-colors"
+                          >
+                            Delete Subcategory
+                          </button>
+                        )}
+                      </div>
                     </div>
                     {isCustomSubcategory || availableSubcategories.length === 0 ? (
                       <input type="text" name="subcategory" value={formData.subcategory} onChange={handleInputChange} placeholder="e.g. Diamond" className="w-full bg-transparent border-b border-gray-300 h-10 outline-none focus:border-black text-sm text-black transition-colors rounded-none" />
@@ -678,6 +721,24 @@ export default function AdminInventoryPage() {
                         <option value="" disabled>Select Subcategory</option>
                         {availableSubcategories.map(sub => <option key={sub} value={sub}>{sub}</option>)}
                       </select>
+                    )}
+                    {availableSubcategories.length > 0 && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {availableSubcategories.map((sub) => (
+                          <button
+                            key={sub}
+                            type="button"
+                            onClick={() => setFormData((prev) => ({ ...prev, subcategory: sub }))}
+                            className={`px-3 py-1 rounded-full text-[9px] uppercase tracking-widest border transition-colors ${
+                              formData.subcategory === sub
+                                ? "bg-black text-white border-black"
+                                : "bg-white text-gray-500 border-gray-200 hover:border-black hover:text-black"
+                            }`}
+                          >
+                            {sub}
+                          </button>
+                        ))}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -704,7 +765,6 @@ export default function AdminInventoryPage() {
 
               {/* STANDARD PRICING & INVENTORY */}
               <div className="bg-white p-6 border border-gray-100 shadow-sm rounded-sm">
-                <h3 className="text-[10px] font-bold uppercase tracking-widest text-black mb-6 border-b border-gray-100 pb-2">Logistics</h3>
                 <div className="grid grid-cols-2 gap-8">
                   <div>
                     <label className="block text-[10px] uppercase tracking-widest text-gray-500 mb-2">Standard Price (₦)</label>
