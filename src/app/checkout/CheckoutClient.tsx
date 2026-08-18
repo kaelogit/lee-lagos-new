@@ -19,6 +19,7 @@ export default function CheckoutClient() {
   
   const isSuccessRef = useRef(false); 
   const hasDropItem = cartItems.some(item => item.is_drop);
+  const hasPreOrderItem = cartItems.some(item => item.is_preorder);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -62,6 +63,8 @@ export default function CheckoutClient() {
     setProcessing(true);
     
     try {
+      const hasPreOrder = cartItems.some(item => item.is_preorder);
+
       // 1. Save the main order
       const { data: orderData, error: orderError } = await supabase
         .from("orders")
@@ -75,7 +78,7 @@ export default function CheckoutClient() {
           total_amount: finalTotal,
           payment_reference: reference.reference,
           payment_status: "paid", 
-          order_status: "processing",
+          order_status: hasPreOrder ? "pre-order" : "processing",
           order_notes: formData.orderNotes || null
         }])
         .select()
@@ -89,7 +92,8 @@ export default function CheckoutClient() {
         product_id: item.id,
         product_name: item.name,
         quantity: item.quantity,
-        price_at_purchase: item.price
+        price_at_purchase: item.price,
+        is_preorder: item.is_preorder ?? false,
       }));
 
       const { error: itemsError } = await supabase
@@ -98,9 +102,10 @@ export default function CheckoutClient() {
 
       if (itemsError) throw itemsError;
 
-      // 2b. Decrement stock for each product (group by product in case of multiple lines)
+      // 2b. Decrement stock only for in-stock items (not pre-orders)
       const quantityByProduct: Record<string, number> = {};
       for (const item of cartItems) {
+        if (item.is_preorder) continue;
         const id = item.id;
         quantityByProduct[id] = (quantityByProduct[id] ?? 0) + item.quantity;
       }
@@ -134,7 +139,8 @@ export default function CheckoutClient() {
             total: finalTotal,
             address: formData.address,
             city: formData.city,
-            state: formData.state
+            state: formData.state,
+            hasPreOrder,
           })
         });
       } catch (emailError) {
@@ -145,7 +151,7 @@ export default function CheckoutClient() {
       // 4. Flag success, clear cart, and redirect perfectly
       isSuccessRef.current = true; 
       clearCart();
-      router.push(`/success?ref=${reference.reference}${hasDropItem ? '&drop=true' : ''}`);
+      router.push(`/success?ref=${reference.reference}${hasDropItem ? '&drop=true' : ''}${hasPreOrder ? '&preorder=true' : ''}`);
 
     } catch (error) {
       console.error("Error saving order:", error);
@@ -259,7 +265,16 @@ export default function CheckoutClient() {
               <div className="bg-white p-8 md:p-12 rounded-2xl border border-gray-100 shadow-[0_10px_40px_rgba(0,0,0,0.03)] lg:sticky lg:top-32">
                 <h3 className="font-heading text-xl font-bold uppercase tracking-widest mb-8 text-black">Order Summary</h3>
                 
-                {/* NEW: DROP NOTICE */}
+                {hasPreOrderItem && (
+                  <div className="p-4 bg-amber-50 rounded-xl flex items-start gap-3 border border-amber-100 mb-8">
+                    <Clock size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-black leading-relaxed">
+                      Your order includes sold-out items on pre-order. These pieces take 10–14 days to arrive after payment.
+                    </p>
+                  </div>
+                )}
+
+                {/* DROP NOTICE */}
                 {hasDropItem && (
                   <div className="p-4 bg-gray-50 rounded-xl flex items-start gap-3 border border-gray-100 mb-8">
                     <Clock size={16} className="text-red-500 shrink-0 mt-0.5" />
@@ -279,11 +294,17 @@ export default function CheckoutClient() {
 
                       <div className="flex-1 flex flex-col py-1">
                         <p className="text-xs font-bold text-black leading-snug line-clamp-2 mb-1">{item.name}</p>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-auto">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">
                           {item.category}
                         </p>
+
+                        {item.is_preorder && (
+                          <span className="inline-block text-[9px] font-bold uppercase tracking-widest text-amber-700 bg-amber-50 px-2 py-0.5 rounded-sm mb-2">
+                            Sold Out · Pre-Order (10–14 days)
+                          </span>
+                        )}
                         
-                        <div className="flex items-end justify-between mt-4">
+                        <div className="flex items-end justify-between mt-auto">
                           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 bg-gray-50 px-2 py-1 rounded-md">Qty: {item.quantity}</p>
 
                           <div className="text-right">

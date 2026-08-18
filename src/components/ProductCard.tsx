@@ -52,6 +52,8 @@ export default function ProductCard({ product }: ProductProps) {
   const mainImage = product.images?.[0] || "/placeholder.jpg";
   const hoverImage = product.images?.[1] || null;
 
+  const isSoldOut = !product.in_stock && !isDropActive;
+
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault(); 
     
@@ -64,7 +66,8 @@ export default function ProductCard({ product }: ProductProps) {
       quantity: 1, 
       category: product.category,
       is_drop: isDropActive,
-      release_date: product.release_date  
+      release_date: product.release_date,
+      is_preorder: isSoldOut,
     });
 
     setIsAdded(true);
@@ -133,13 +136,13 @@ export default function ProductCard({ product }: ProductProps) {
            ========================================= */}
         <button 
           onClick={handleAddToCart}
-          disabled={isAdded || (!product.in_stock && !isDropActive)}
+          disabled={isAdded}
           className={`absolute bottom-3 right-3 p-3 rounded-full shadow-md transition-all duration-300 flex items-center justify-center z-10 ${
             isAdded 
               ? 'bg-green-600 text-white scale-110' 
               : 'bg-white text-black border border-gray-100 hover:bg-black hover:text-white hover:border-black active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed'
           }`}
-          title={isDropActive ? "Pre-Order" : "Add to Bag"}
+          title={isDropActive ? "Pre-Order Drop" : isSoldOut ? "Pre-Order" : "Add to Bag"}
         >
           {isAdded ? <Check size={18} strokeWidth={2} /> : <ShoppingBag size={18} strokeWidth={2} />}
         </button>
@@ -178,7 +181,7 @@ export default function ProductCard({ product }: ProductProps) {
 
         {!product.in_stock && !isDropActive && (
           <span className="mt-1 inline-block text-[10px] font-bold uppercase tracking-widest text-red-600">
-            Out of Stock
+            Sold Out · Pre-Order
           </span>
         )}
       </div>

@@ -10,6 +10,7 @@ type OrderItem = {
   product_name: string;
   quantity: number;
   price_at_purchase: number;
+  is_preorder?: boolean | null;
 };
 
 type Order = {
@@ -30,6 +31,7 @@ type Order = {
 
 const STATUSES = [
   { value: "all", label: "All" },
+  { value: "pre-order", label: "Pre-Orders" },
   { value: "processing", label: "Processing" },
   { value: "shipped", label: "Shipped" },
   { value: "delivered", label: "Delivered" },
@@ -180,14 +182,16 @@ function AdminOrdersContent() {
                     <p className="text-[9px] uppercase tracking-widest text-lee-grey mb-1">Status</p>
                     <span
                       className={`inline-block text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-sm ${
-                        order.order_status === "processing"
+                        order.order_status === "pre-order"
+                          ? "bg-amber-100 text-amber-800"
+                          : order.order_status === "processing"
                           ? "bg-lee-black text-white"
                           : order.order_status === "shipped"
                             ? "bg-blue-100 text-blue-800"
                             : "bg-green-100 text-green-800"
                       }`}
                     >
-                      {order.order_status}
+                      {order.order_status === "pre-order" ? "Pre-Order" : order.order_status}
                     </span>
                   </div>
                 </div>
@@ -262,15 +266,22 @@ function AdminOrdersContent() {
                           {order.order_items?.map((item) => (
                             <div
                               key={item.id}
-                              className="flex justify-between items-center text-sm"
+                              className="flex justify-between items-start text-sm gap-4"
                             >
-                              <div className="flex items-center gap-4">
-                                <span className="font-mono text-lee-grey text-xs">
-                                  {item.quantity}×
-                                </span>
-                                <span className="uppercase tracking-widest text-xs font-bold text-lee-black">
-                                  {item.product_name}
-                                </span>
+                              <div className="flex flex-col gap-1">
+                                <div className="flex items-center gap-4 flex-wrap">
+                                  <span className="font-mono text-lee-grey text-xs">
+                                    {item.quantity}×
+                                  </span>
+                                  <span className="uppercase tracking-widest text-xs font-bold text-lee-black">
+                                    {item.product_name}
+                                  </span>
+                                </div>
+                                {item.is_preorder && (
+                                  <span className="text-[8px] font-bold uppercase tracking-widest text-amber-700 bg-amber-50 px-2 py-0.5 rounded-sm w-fit ml-8">
+                                    Pre-Order · 10–14 days
+                                  </span>
+                                )}
                               </div>
                               <span className="font-mono text-lee-black text-xs">
                                 ₦{(item.price_at_purchase * item.quantity).toLocaleString()}
@@ -281,6 +292,16 @@ function AdminOrdersContent() {
                       </div>
 
                       <div className="pt-6 border-t border-lee-light-grey flex flex-wrap gap-3">
+                        <button
+                          onClick={() => updateOrderStatus(order.id, "pre-order")}
+                          className={`px-5 py-2.5 text-[9px] font-bold uppercase tracking-widest border rounded-sm transition-colors ${
+                            order.order_status === "pre-order"
+                              ? "bg-amber-600 text-white border-amber-600"
+                              : "bg-lee-white border-lee-light-grey text-lee-grey hover:border-amber-600 hover:text-amber-600"
+                          }`}
+                        >
+                          Pre-Order
+                        </button>
                         <button
                           onClick={() => updateOrderStatus(order.id, "processing")}
                           className={`px-5 py-2.5 text-[9px] font-bold uppercase tracking-widest border rounded-sm transition-colors ${

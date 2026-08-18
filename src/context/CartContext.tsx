@@ -3,22 +3,23 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 type CartItem = {
-  id: number;
+  id: string;
   name: string;
   price: number;
-  original_price?: number | null; // <--- FIXED: Added "| null" and the semicolon ";"
+  original_price?: number | null;
   image: string;
   quantity: number;
   category: string;
-  is_drop?: boolean;       // <--- NEW: Track if it's a drop
-  release_date?: string;   // <--- NEW: Track when it releases
+  is_drop?: boolean;
+  release_date?: string;
+  is_preorder?: boolean;
 };
 
 type CartContextType = {
   cartItems: CartItem[];
   addToCart: (item: CartItem) => void;
-  removeFromCart: (id: number) => void;
-  updateQuantity: (id: number, delta: number) => void;
+  removeFromCart: (id: string) => void;
+  updateQuantity: (id: string, delta: number) => void;
   clearCart: () => void;
   cartCount: number;
   cartTotal: number;
@@ -65,11 +66,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const removeFromCart = (id: number) => {
+  const removeFromCart = (id: string) => {
     setCartItems((prev) => prev.filter((i) => i.id !== id));
   };
 
-  const updateQuantity = (id: number, delta: number) => {
+  const updateQuantity = (id: string, delta: number) => {
     setCartItems((prev) =>
       prev.map((item) => {
         if (item.id === id) {

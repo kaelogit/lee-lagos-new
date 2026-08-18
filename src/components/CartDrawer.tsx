@@ -17,6 +17,7 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
   const router = useRouter();
 
   const hasDropItem = cartItems.some(item => item.is_drop);
+  const hasPreOrderItem = cartItems.some(item => item.is_preorder);
 
   // ==========================================
   // PREVENT BACKGROUND SCROLLING WHEN OPEN
@@ -96,6 +97,16 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
           ) : (
             <div className="space-y-8">
               
+              {/* PRE-ORDER NOTICE */}
+              {hasPreOrderItem && (
+                <div className="p-4 bg-amber-50 rounded-xl flex items-start gap-3 border border-amber-100">
+                  <Clock size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-black leading-relaxed">
+                    Your bag includes sold-out items on pre-order. These pieces take 10–14 days to arrive after payment.
+                  </p>
+                </div>
+              )}
+
               {/* DROP NOTICE */}
               {hasDropItem && (
                 <div className="p-4 bg-gray-50 rounded-xl flex items-start gap-3 border border-gray-100">
@@ -134,9 +145,15 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                       </button>
                     </div>
 
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-auto">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">
                       {item.category}
                     </p>
+
+                    {item.is_preorder && (
+                      <span className="inline-block text-[9px] font-bold uppercase tracking-widest text-amber-700 bg-amber-50 px-2 py-0.5 rounded-sm mb-1">
+                        Sold Out · Pre-Order (10–14 days)
+                      </span>
+                    )}
 
                     <div className="flex items-end justify-between mt-4">
                       

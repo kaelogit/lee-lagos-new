@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "../../lib/supabase";
-import { TrendingUp, ShoppingBag, AlertCircle, Package, ArrowUpRight } from "lucide-react";
+import { TrendingUp, ShoppingBag, AlertCircle, Package, ArrowUpRight, Clock } from "lucide-react";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
     totalRevenue: 0,
     totalOrders: 0,
     processingOrders: 0,
+    preOrderCount: 0,
     outOfStockItems: 0,
   });
   const [loading, setLoading] = useState(true);
@@ -27,12 +28,14 @@ export default function AdminDashboard() {
       if (!ordersError && !productsError && orders && products) {
         const revenue = orders.reduce((sum, order) => sum + Number(order.total_amount), 0);
         const processing = orders.filter((o) => o.order_status === "processing").length;
+        const preOrders = orders.filter((o) => o.order_status === "pre-order").length;
         const outOfStock = products.filter((p) => p.stock <= 0 || p.in_stock === false).length;
 
         setStats({
           totalRevenue: revenue,
           totalOrders: orders.length,
           processingOrders: processing,
+          preOrderCount: preOrders,
           outOfStockItems: outOfStock,
         });
       }
@@ -63,7 +66,7 @@ export default function AdminDashboard() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 md:gap-6">
         <div className="bg-lee-white border border-lee-light-grey p-6 md:p-8 rounded-sm hover:border-lee-black/20 transition-colors flex flex-col justify-between min-h-[160px]">
           <div className="flex items-start justify-between">
             <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-lee-grey">Total Revenue</p>
@@ -124,6 +127,29 @@ export default function AdminDashboard() {
             {stats.outOfStockItems}
           </p>
           <span className="text-[9px] uppercase tracking-widest text-lee-grey mt-2">Manage inventory →</span>
+        </Link>
+        <Link
+          href="/admin/orders?status=pre-order"
+          className={`border p-6 md:p-8 rounded-sm flex flex-col justify-between min-h-[160px] group transition-colors ${
+            stats.preOrderCount > 0
+              ? "bg-amber-50/50 border-amber-200 hover:border-amber-600"
+              : "bg-lee-white border-lee-light-grey hover:border-lee-black/20"
+          }`}
+        >
+          <div className="flex items-start justify-between">
+            <p className={`text-[10px] uppercase tracking-[0.2em] font-bold ${
+              stats.preOrderCount > 0 ? "text-amber-700" : "text-lee-grey"
+            }`}>
+              Pre-Orders
+            </p>
+            {stats.preOrderCount > 0 && <Clock size={18} className="text-amber-600 shrink-0" />}
+          </div>
+          <p className={`font-mono text-2xl md:text-3xl tracking-tight font-medium mt-2 ${
+            stats.preOrderCount > 0 ? "text-amber-700" : "text-lee-black"
+          }`}>
+            {stats.preOrderCount}
+          </p>
+          <span className="text-[9px] uppercase tracking-widest text-lee-grey mt-2">View pre-orders →</span>
         </Link>
       </div>
 

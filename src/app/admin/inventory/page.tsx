@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "../../../lib/supabase";
-import { Plus, X, Edit2, Clock, Star, Sparkles, UploadCloud, Trash2, Tag, Wand2, Loader2 } from "lucide-react";
+import { Plus, X, Edit2, Clock, Star, Sparkles, UploadCloud, Trash2, Tag, Wand2, Loader2, Ban } from "lucide-react";
 import Image from "next/image";
 import ProductImage from "../../../components/ProductImage";
 
@@ -160,6 +160,27 @@ export default function AdminInventoryPage() {
     const { error } = await supabase.from("products").delete().eq("id", id);
     if (error) alert("Error deleting product: " + error.message);
     else fetchProducts();
+  };
+
+  const markSoldOut = async (id: string, name: string) => {
+    const confirmed = window.confirm(
+      `Mark "${name}" as sold out?\n\nThis is for when you sold the last pieces in store. Stock will be set to 0. The product will still show on the website as Sold Out with Pre-Order (10–14 days).`
+    );
+    if (!confirmed) return;
+
+    const { error } = await supabase
+      .from("products")
+      .update({ stock: 0, in_stock: false })
+      .eq("id", id);
+
+    if (error) {
+      alert("Could not mark as sold out: " + error.message);
+      return;
+    }
+
+    setProducts((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, stock: 0, in_stock: false } : p))
+    );
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -516,7 +537,8 @@ export default function AdminInventoryPage() {
                   {product.on_sale && <span className="text-[8px] bg-red-50 text-lee-red border border-red-100 px-2 py-0.5 uppercase tracking-widest font-bold">Sale</span>}
                   {product.is_bestseller && <span className="text-[8px] bg-yellow-50 text-yellow-700 border border-yellow-100 px-2 py-0.5 uppercase tracking-widest font-bold">Bestseller</span>}
                   {product.is_new_arrival && <span className="text-[8px] bg-blue-50 text-blue-600 border border-blue-100 px-2 py-0.5 uppercase tracking-widest font-bold">New</span>}
-                  {product.stock <= 0 && <span className="text-[8px] bg-lee-red text-white px-2 py-0.5 uppercase tracking-widest font-bold">Out of Stock</span>}
+                  {product.stock <= 0 && <span className="text-[8px] bg-lee-red text-white px-2 py-0.5 uppercase tracking-widest font-bold">Sold Out</span>}
+                  {product.stock <= 0 && <span className="text-[8px] bg-amber-100 text-amber-800 px-2 py-0.5 uppercase tracking-widest font-bold">Pre-Order Open</span>}
                 </div>
               </div>
             </div>
@@ -545,6 +567,16 @@ export default function AdminInventoryPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
+                {product.stock > 0 && product.id && (
+                  <button
+                    onClick={() => markSoldOut(product.id as string, product.name)}
+                    className="h-10 px-3 flex items-center justify-center gap-2 border border-amber-200 text-amber-800 hover:bg-amber-600 hover:text-white hover:border-amber-600 transition-colors shrink-0 rounded-sm"
+                    title="Mark as sold out (for offline sales)"
+                  >
+                    <Ban size={14} />
+                    <span className="text-[9px] font-bold uppercase tracking-widest hidden sm:inline">Sold Out</span>
+                  </button>
+                )}
                 <button
                   onClick={() => openEditForm(product)}
                   className="w-10 h-10 flex items-center justify-center border border-lee-light-grey text-lee-black hover:bg-lee-black hover:text-white hover:border-lee-black transition-colors shrink-0 rounded-sm"
@@ -772,7 +804,24 @@ export default function AdminInventoryPage() {
                   </div>
                   <div>
                     <label className="block text-[10px] uppercase tracking-widest text-gray-500 mb-2">Units in Stock</label>
-                    <input required type="number" name="stock" value={formData.stock || ""} onChange={handleInputChange} className="w-full bg-transparent border-b border-gray-300 h-10 outline-none focus:border-black font-mono text-sm text-black transition-colors rounded-none" />
+                    <input required type="number" min="0" name="stock" value={formData.stock === 0 ? 0 : formData.stock || ""} onChange={handleInputChange} className="w-full bg-transparent border-b border-gray-300 h-10 outline-none focus:border-black font-mono text-sm text-black transition-colors rounded-none" />
+                    <p className="text-[9px] text-gray-400 mt-2 uppercase tracking-widest leading-relaxed">
+                      Set to 0 if you sold the last pieces in store. Website will show Sold Out with Pre-Order.
+                    </p>
+                    {formData.stock > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setFormData((prev) => ({ ...prev, stock: 0, in_stock: false }))}
+                        className="mt-3 text-[9px] font-bold uppercase tracking-widest text-amber-800 border border-amber-200 px-3 py-2 hover:bg-amber-600 hover:text-white hover:border-amber-600 transition-colors rounded-sm"
+                      >
+                        Mark as Sold Out
+                      </button>
+                    )}
+                    {formData.stock <= 0 && (
+                      <p className="mt-3 text-[9px] font-bold uppercase tracking-widest text-amber-700">
+                        Currently sold out · Pre-order is open
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

@@ -131,6 +131,8 @@ export default function ProductClientPage({ id }: { id: string }) {
 
   // ADD TO BAG
   const handleAddToCart = () => {
+    const isSoldOut = !product.in_stock && !isDropActive;
+
     addToCart({
       id: product.id,
       name: product.name,
@@ -140,7 +142,8 @@ export default function ProductClientPage({ id }: { id: string }) {
       quantity: quantity,
       category: product.category,
       is_drop: isDropActive,            
-      release_date: product.release_date  
+      release_date: product.release_date,
+      is_preorder: isSoldOut,
     });
 
     setIsAdded(true);
@@ -278,8 +281,8 @@ export default function ProductClientPage({ id }: { id: string }) {
                 </div>
                 
                 {!isDropActive && (
-                   <span className="text-sm text-green-600 font-bold uppercase tracking-wide block mt-2">
-                     {product.in_stock ? "In Stock" : "Out of Stock"}
+                   <span className={`text-sm font-bold uppercase tracking-wide block mt-2 ${product.in_stock ? "text-green-600" : "text-red-600"}`}>
+                     {product.in_stock ? "In Stock" : "Sold Out · Pre-Order Available"}
                    </span>
                 )}
               </div>
@@ -294,11 +297,10 @@ export default function ProductClientPage({ id }: { id: string }) {
                 
                 <button 
                   onClick={handleAddToCart}
-                  disabled={!product.in_stock && !isDropActive}
-                  className={`flex-1 text-white h-full flex items-center justify-center gap-3 uppercase font-bold tracking-widest text-xs transition-all rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${isAdded ? 'bg-green-600 hover:bg-green-700' : 'bg-black hover:bg-gray-800'}`}
+                  className={`flex-1 text-white h-full flex items-center justify-center gap-3 uppercase font-bold tracking-widest text-xs transition-all rounded-lg shadow-sm ${isAdded ? 'bg-green-600 hover:bg-green-700' : 'bg-black hover:bg-gray-800'}`}
                 >
                   {isAdded ? <Check size={18} /> : <ShoppingBag size={18} />} 
-                  {isAdded ? "Added" : isDropActive ? "Buy Now" : !product.in_stock ? "Sold Out" : "Add to Bag"}
+                  {isAdded ? "Added" : isDropActive ? "Buy Now" : isSoldOut ? "Pre-Order" : "Add to Bag"}
                 </button>
               </div>
 

@@ -6,7 +6,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, name, orderReference, items, total, address, city, state } = body;
+    const { email, name, orderReference, items, total, address, city, state, hasPreOrder } = body;
 
     // Construct the items list in HTML
     const itemsHtml = items.map((item: any) => `
@@ -14,9 +14,11 @@ export async function POST(request: Request) {
         <td style="padding: 16px 0; border-bottom: 1px solid #eaeaea;">
           <p style="margin: 0; font-size: 14px; font-weight: bold; color: #000000;">
             ${item.product_name}
+            ${item.is_preorder ? '<span style="display: inline-block; margin-left: 8px; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #b45309; background: #fffbeb; padding: 2px 8px; border-radius: 4px;">Pre-Order</span>' : ''}
           </p>
           <p style="margin: 4px 0 0 0; font-size: 12px; color: #666666;">
             Quantity: ${item.quantity}
+            ${item.is_preorder ? ' · Delivery in 10–14 days' : ''}
           </p>
         </td>
         <td style="padding: 16px 0; border-bottom: 1px solid #eaeaea; text-align: right; font-size: 14px; font-weight: bold; color: #000000;">
@@ -24,6 +26,19 @@ export async function POST(request: Request) {
         </td>
       </tr>
     `).join('');
+
+    const preOrderNotice = hasPreOrder ? `
+        <div style="background-color: #fffbeb; border: 1px solid #fde68a; padding: 20px; border-radius: 4px; margin-bottom: 32px;">
+          <p style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #b45309; margin: 0 0 8px 0; font-weight: bold;">Pre-Order Items in Your Order</p>
+          <p style="font-size: 14px; margin: 0; line-height: 1.6; color: #333333;">
+            One or more items in your order are currently sold out and have been placed on pre-order. These pieces typically take <strong>10 to 14 days</strong> to arrive. We will contact you via phone or WhatsApp once your items are ready to ship.
+          </p>
+        </div>
+    ` : '';
+
+    const introText = hasPreOrder
+      ? `Thank you so much for your order! We have received your payment securely (Order #${orderReference}). Some items in your order are on pre-order and will take 10–14 days. We will call or WhatsApp you once everything is ready to ship.`
+      : `Thank you so much for your order! We have received your payment securely (Order #${orderReference}). Our team is packing your items now, and we will call or WhatsApp you very soon to arrange your delivery.`;
 
     // The Friendly but Professional Email Template
     const emailHtml = `
@@ -35,8 +50,10 @@ export async function POST(request: Request) {
         
         <p style="font-size: 16px; margin-bottom: 16px;">Hi ${name},</p>
         <p style="font-size: 16px; line-height: 1.6; margin-bottom: 32px; color: #333333;">
-          Thank you so much for your order! We have received your payment securely (Order #${orderReference}). Our team is packing your items now, and we will call or WhatsApp you very soon to arrange your delivery.
+          ${introText}
         </p>
+
+        ${preOrderNotice}
         
         <h3 style="font-size: 14px; text-transform: uppercase; letter-spacing: 2px; border-bottom: 2px solid #000000; padding-bottom: 10px; margin-bottom: 16px;">
           Your Order Details

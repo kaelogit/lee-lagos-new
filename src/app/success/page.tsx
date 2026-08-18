@@ -10,7 +10,8 @@ import Footer from "../../components/Footer";
 function SuccessContent() {
   const searchParams = useSearchParams();
   const orderNumber = searchParams.get("ref");
-  const isDrop = searchParams.get("drop") === "true"; // Detects the drop flag from the URL
+  const isDrop = searchParams.get("drop") === "true";
+  const isPreOrder = searchParams.get("preorder") === "true";
 
   // Scroll to top when the page loads
   useEffect(() => {
@@ -49,6 +50,22 @@ function SuccessContent() {
             </h3>
             <p className="text-sm text-gray-300 leading-relaxed">
               You successfully grabbed an exclusive Sunday Drop item! Remember, this special piece will ship out after its official release. We will send you a message the exact moment it leaves our store.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {isPreOrder && (
+        <div className="bg-amber-50 border border-amber-100 text-black p-6 md:p-8 rounded-sm mb-12 text-left flex gap-5 animate-in slide-in-from-bottom-4 duration-700 shadow-sm">
+          <div className="mt-1">
+            <Clock size={28} className="text-amber-600" />
+          </div>
+          <div>
+            <h3 className="font-bold uppercase tracking-[0.2em] text-[11px] text-amber-700 mb-3">
+              Pre-Order Confirmed
+            </h3>
+            <p className="text-sm text-gray-700 leading-relaxed">
+              Your order includes sold-out items on pre-order. These pieces typically take <strong>10 to 14 days</strong> to arrive. We will contact you via phone or WhatsApp once your items are ready to ship.
             </p>
           </div>
         </div>
