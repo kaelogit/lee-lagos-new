@@ -162,7 +162,7 @@ export default function ProductClientPage({ id }: { id: string }) {
 
   const shareToSocial = (platform: string) => {
     const url = encodeURIComponent(window.location.href);
-    const text = encodeURIComponent(`Check out this ${product.name} on Lee's Jewellers.`);
+    const text = encodeURIComponent(`Check out this ${product.name} on Lees Jewellers.`);
     
     let link = "";
     if (platform === 'whatsapp') link = `https://wa.me/?text=${text}%20${url}`;
@@ -185,8 +185,8 @@ export default function ProductClientPage({ id }: { id: string }) {
 
   const isSoldOut = !product.in_stock && !isDropActive;
   const whatsappText = isSoldOut
-    ? `Hello Lee's Jewellers, I would like to *pre-order* the ${product.name}. It is currently showing as out of stock on your website. Please confirm availability, price and expected delivery time. Thank you!`
-    : `Hello Lee's Jewellers, I am interested in the ${product.name} (Qty: ${quantity}). Could you please send me a video of this soon as you're chanced so I can see the details? Thank you!`;
+    ? `Hello Lees Jewellers, I would like to *pre-order* the ${product.name}. It is currently showing as out of stock on your website. Please confirm availability, price and expected delivery time. Thank you!`
+    : `Hello Lees Jewellers, I am interested in the ${product.name} (Qty: ${quantity}). Could you please send me a video of this soon as you're chanced so I can see the details? Thank you!`;
 
   return (
     <div className="bg-white min-h-screen">

@@ -33,7 +33,7 @@ function SuccessContent() {
       </h1>
       
       <p className="text-gray-600 text-sm md:text-base leading-relaxed mb-10 max-w-md mx-auto">
-        Thank you for choosing Lee's Jewellers. We have received your payment, and our team is getting your items ready for you.
+        Thank you for choosing Lees Jewellers. We have received your payment, and our team is getting your items ready for you.
       </p>
 
       {/* =========================================

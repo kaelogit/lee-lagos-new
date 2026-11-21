@@ -36,7 +36,7 @@ export default function AdminLoginPage() {
         {/* Brand */}
         <div className="text-center mb-10">
           <Link href="/" className="inline-block font-heading text-3xl font-bold uppercase tracking-tighter text-lee-black hover:opacity-80 transition-opacity">
-            Lee's Jewellers
+            Lees Jewellers
           </Link>
           <p className="text-[10px] uppercase tracking-[0.3em] text-lee-grey mt-2">
             The Standard.

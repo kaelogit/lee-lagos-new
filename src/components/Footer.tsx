@@ -20,7 +20,7 @@ export default function Footer() {
             viewport={{ once: true }}
             transition={{ duration: 0.45, ease: "easeOut" }}
           >
-            Lee's Jewellers & Optique
+            Lees Jewellers & Optique
           </motion.h2>
         </div>
 
@@ -106,7 +106,7 @@ export default function Footer() {
           
           {/* Copyright */}
           <p className="text-[10px] text-gray-500 uppercase tracking-widest order-2 lg:order-1 text-center lg:text-left w-full lg:w-auto">
-            © {new Date().getFullYear()} Lee's Jewellers & Optique. All rights reserved.
+            © {new Date().getFullYear()} Lees Jewellers & Optique. All rights reserved.
           </p>
           
           {/* Luxury Text-Based Social Links */}

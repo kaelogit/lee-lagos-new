@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; color: #000000; background-color: #ffffff;">
         
         <div style="text-align: center; margin-bottom: 40px;">
-          <h1 style="font-size: 28px; font-weight: 900; letter-spacing: 4px; text-transform: uppercase; margin: 0;">LEE'S JEWELLERS.</h1>
+          <h1 style="font-size: 28px; font-weight: 900; letter-spacing: 4px; text-transform: uppercase; margin: 0;">LEES JEWELLERS.</h1>
         </div>
         
         <p style="font-size: 16px; margin-bottom: 16px;">Hi ${name},</p>
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
         <div style="text-align: center; border-top: 1px solid #eaeaea; padding-top: 32px;">
           <p style="font-size: 12px; color: #666666; margin-bottom: 8px;">Need help? Reply to this email or message us.</p>
           <p style="font-size: 12px; color: #999999; margin: 0; line-height: 1.6;">
-            Lee's Jewellers<br />
+            Lees Jewellers<br />
             33A Adebayo Doherty Road, Lekki Phase 1, Lagos<br />
             leelagos@gmail.com | +234 916 000 3594
           </p>
@@ -89,10 +89,10 @@ export async function POST(request: Request) {
     `;
 
     const data = await resend.emails.send({
-      from: "Lee's Jewellers <orders@leelagos.com>",
+      from: "Lees Jewellers <orders@leelagos.com>",
       to: [email],
       replyTo: 'leelagos@gmail.com',
-      subject: `Order Confirmed! (#${orderReference}) - Lee's Jewellers`,
+      subject: `Order Confirmed! (#${orderReference}) - Lees Jewellers`,
       html: emailHtml,
     });
 

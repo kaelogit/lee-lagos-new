@@ -230,7 +230,7 @@ export default function Navbar() {
               {/* 2. LOGO */}
               <div className="flex-1 lg:flex-none flex justify-center lg:justify-start">
                 <Link href="/" className="font-heading text-lg sm:text-2xl font-bold tracking-tight uppercase">
-                  Lee's<span className="font-light"> Jewellers</span>
+                  Lees<span className="font-light"> Jewellers</span>
                 </Link>
               </div>
 

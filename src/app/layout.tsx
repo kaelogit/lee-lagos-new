@@ -22,21 +22,21 @@ const lato = Lato({
 export const metadata: Metadata = {
   metadataBase: new URL('https://leesjewellers.com'),
   title: {
-    default: "LEE'S JEWELLERS | The Standard.",
-    template: "%s | LEE'S JEWELLERS"
+    default: "LEES JEWELLERS | The Standard.",
+    template: "%s | LEES JEWELLERS"
   },
-  description: "Discover the finest collection of luxury watches, moissanite, diamonds, and signature perfumes at Lee's Jewellers. The standard of luxury in Lagos.",
+  description: "Discover the finest collection of luxury watches, moissanite, diamonds, and signature perfumes at Lees Jewellers. The standard of luxury in Lagos.",
   openGraph: {
-    title: "LEE'S JEWELLERS | The Standard.",
-    description: "Discover the finest collection of luxury pieces at Lee's Jewellers. The standard of luxury in Lagos.",
+    title: "LEES JEWELLERS | The Standard.",
+    description: "Discover the finest collection of luxury pieces at Lees Jewellers. The standard of luxury in Lagos.",
     url: '/',
-    siteName: "Lee's Jewellers",
+    siteName: "Lees Jewellers",
     images: [
       {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: "Lee's Jewellers Luxury Collection",
+        alt: "Lees Jewellers Luxury Collection",
       },
     ],
     locale: 'en_NG',
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "LEE'S JEWELLERS | The Standard.",
+    title: "LEES JEWELLERS | The Standard.",
     description: "The standard of luxury in Lagos.",
     images: ['/og-image.jpg'], // Uses the same image
   },
