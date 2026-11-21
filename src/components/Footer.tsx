@@ -14,13 +14,13 @@ export default function Footer() {
            ========================================= */}
         <div className="mb-12 md:mb-24">
           <motion.h2
-            className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-none font-black uppercase tracking-tighter text-white"
+            className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[0.9] font-black uppercase tracking-tighter text-white"
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.45, ease: "easeOut" }}
           >
-            Lee's Jewellers.
+            Lee's Jewellers & Optique
           </motion.h2>
         </div>
 
@@ -106,7 +106,7 @@ export default function Footer() {
           
           {/* Copyright */}
           <p className="text-[10px] text-gray-500 uppercase tracking-widest order-2 lg:order-1 text-center lg:text-left w-full lg:w-auto">
-            © {new Date().getFullYear()} Lee's Jewellers. All rights reserved.
+            © {new Date().getFullYear()} Lee's Jewellers & Optique. All rights reserved.
           </p>
           
           {/* Luxury Text-Based Social Links */}
