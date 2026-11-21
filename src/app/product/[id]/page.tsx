@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
   if (!product) {
     return {
-      title: 'Piece Not Found | LEE LAGOS',
+      title: "Piece Not Found | LEE'S JEWELLERS",
     }
   }
 
@@ -29,13 +29,13 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
   const description = product.description 
     ? product.description.substring(0, 150) + "..." 
-    : "Discover this masterpiece at Lee Lagos.";
+    : "Discover this masterpiece at Lee's Jewellers.";
 
   return {
     title: product.name,
     description: `₦${Number(activePrice).toLocaleString()} - ${description}`,
     openGraph: {
-      title: `${product.name} | LEE LAGOS`,
+      title: `${product.name} | LEE'S JEWELLERS`,
       description: `₦${Number(activePrice).toLocaleString()} - ${description}`,
       images: [
         {
@@ -49,7 +49,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${product.name} | LEE LAGOS`,
+      title: `${product.name} | LEE'S JEWELLERS`,
       description: `₦${Number(activePrice).toLocaleString()}`,
       images: [product.images[0] || '/og-image.jpg'],
     }

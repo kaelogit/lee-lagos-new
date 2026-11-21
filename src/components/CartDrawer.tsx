@@ -6,6 +6,8 @@ import { X, Trash2, ArrowRight, ShoppingBag, Clock } from "lucide-react";
 import ProductImage from "./ProductImage";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { discountPercent } from "../lib/utils";
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -117,8 +119,16 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                 </div>
               )}
 
-              {cartItems.map((item) => (
-                <div key={item.id} className="flex gap-5 group relative">
+              {cartItems.map((item, index) => {
+                const off = item.original_price ? discountPercent(item.original_price, item.price) : 0;
+                return (
+                <motion.div
+                  key={item.id}
+                  className="flex gap-5 group relative"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, ease: "easeOut", delay: Math.min(index, 6) * 0.04 }}
+                >
                   
                   {/* Item Image */}
                   <Link href={`/product/${item.id}`} onClick={closeDrawer} className="relative w-20 h-28 bg-[#fcfcfc] overflow-hidden shrink-0 block rounded-lg">
@@ -187,11 +197,15 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                         <p className={`text-sm font-bold font-mono ${item.original_price ? 'text-red-600' : 'text-black'}`}>
                           ₦{(item.price * item.quantity).toLocaleString()}
                         </p>
+                        {off > 0 && (
+                          <p className="text-[9px] font-bold uppercase tracking-widest text-red-600 mt-1">{off}% off</p>
+                        )}
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                </motion.div>
+                );
+              })}
             </div>
           )}
         </div>

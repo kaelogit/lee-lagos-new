@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { motion } from "framer-motion";
 
 // THE 5 LUXURY SLIDES
 const SLIDES = [
@@ -81,56 +82,57 @@ export default function HeroSlider() {
     <section className="relative w-full h-[200px] sm:h-[250px] md:h-[320px] lg:h-[400px] overflow-hidden bg-black text-white">
       
       {/* 1. THE SLIDES */}
-      {SLIDES.map((slide, index) => (
-        <div
+      {SLIDES.map((slide, index) => {
+        const active = index === current;
+        return (
+        <motion.div
           key={slide.id}
-          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-            index === current ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
-          }`}
+          className="absolute inset-0"
+          initial={false}
+          animate={{ opacity: active ? 1 : 0 }}
+          transition={{ duration: 0.45, ease: "easeOut" }}
+          style={{ zIndex: active ? 10 : 0, pointerEvents: active ? "auto" : "none" }}
         >
-          {/* Background Image with Dark Overlay */}
           <div className="absolute inset-0 w-full h-full">
             <Image
               src={slide.src}
               alt={slide.title}
               fill
-              className="object-cover object-center"
-              priority={index === 0} 
+              className={`object-cover object-center transition-transform duration-[4000ms] ease-out ${active ? "scale-105" : "scale-100"}`}
+              priority={index === 0}
             />
-            {/* The "Vignette" Overlay */}
             <div className="absolute inset-0 bg-black/20 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
           </div>
 
-          {/* Text Content - perfectly centered for the slim height */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className={`lee-container w-full ${
               slide.align === 'left' ? 'text-left' : 
               slide.align === 'right' ? 'text-right' : 'text-center'
             }`}>
-              <div className={`max-w-2xl ${slide.align === 'right' ? 'ml-auto' : slide.align === 'center' ? 'mx-auto' : ''}`}>
-                
-                <h1 className={`font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-tighter mb-2 transition-all duration-700 transform ${index === current ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}>
+              <motion.div
+                className={`max-w-2xl ${slide.align === 'right' ? 'ml-auto' : slide.align === 'center' ? 'mx-auto' : ''}`}
+                initial={false}
+                animate={{ opacity: active ? 1 : 0, y: active ? 0 : 12 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+              >
+                <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-tighter mb-2">
                   {slide.title}
                 </h1>
-                
-                <p className={`text-[10px] sm:text-xs md:text-sm lg:text-base text-gray-200 mb-4 md:mb-6 font-light tracking-wide max-w-lg mx-auto md:mx-0 transition-all duration-700 delay-150 transform ${index === current ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}>
+                <p className="text-[10px] sm:text-xs md:text-sm lg:text-base text-gray-200 mb-4 md:mb-6 font-light tracking-wide max-w-lg mx-auto md:mx-0">
                   {slide.subtitle}
                 </p>
-                
-                <div className={`transition-all duration-700 delay-300 transform ${index === current ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}>
-                  <Link
-                    href={slide.link}
-                    className="inline-block bg-white text-black px-5 py-2.5 md:px-8 md:py-3.5 text-[9px] md:text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-gray-200 border border-white transition-all duration-300 rounded-sm shadow-[0_0_20px_rgba(255,255,255,0.1)]"
-                  >
-                    {slide.cta}
-                  </Link>
-                </div>
-
-              </div>
+                <Link
+                  href={slide.link}
+                  className="inline-block bg-white text-black px-5 py-2.5 md:px-8 md:py-3.5 text-[9px] md:text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-gray-200 border border-white transition-all duration-300 rounded-sm shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                >
+                  {slide.cta}
+                </Link>
+              </motion.div>
             </div>
           </div>
-        </div>
-      ))}
+        </motion.div>
+        );
+      })}
 
       {/* 2. NAVIGATION ARROWS */}
       <button 

@@ -1,6 +1,7 @@
 "use client";
 
 import { ShieldCheck, Truck, Gift } from "lucide-react";
+import { motion } from "framer-motion";
 
 const FEATURES = [
   {
@@ -27,7 +28,14 @@ export default function TrustSection() {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center divide-y md:divide-y-0 md:divide-x divide-gray-100">
           {FEATURES.map((feature, index) => (
-            <div key={index} className="px-4 py-8 group hover:-translate-y-1 transition-transform duration-300">
+            <motion.div
+              key={index}
+              className="px-4 py-8 group hover:-translate-y-1 transition-transform duration-300"
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, ease: "easeOut", delay: index * 0.08 }}
+            >
               <div className="flex justify-center mb-6">
                 <div className="p-4 bg-gray-50 rounded-full group-hover:bg-black group-hover:text-white transition-colors duration-300">
                   <feature.icon size={32} strokeWidth={1.5} />
@@ -39,7 +47,7 @@ export default function TrustSection() {
               <p className="text-gray-500 text-sm leading-relaxed max-w-xs mx-auto">
                 {feature.text}
               </p>
-            </div>
+            </motion.div>
           ))}
         </div>
 

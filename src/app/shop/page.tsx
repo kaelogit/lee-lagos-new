@@ -6,6 +6,7 @@ import { supabase } from "../../lib/supabase";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import ProductCard from "../../components/ProductCard";
+import { motion } from "framer-motion";
 
 const PAGE_SIZE = 40; 
 
@@ -85,7 +86,12 @@ function ShopContent() {
 
       {/* SEARCH/SHOP HEADER */}
       <div className="bg-gray-50 border-b border-gray-100 py-16 md:py-24">
-        <div className="lee-container text-center">
+        <motion.div
+          className="lee-container text-center"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
           <h1 className="font-heading text-3xl md:text-5xl font-bold uppercase tracking-widest text-black mb-4">
             {searchQuery 
               ? `Results for "${searchQuery}"` 
@@ -100,7 +106,7 @@ function ShopContent() {
               Found {products.length} {products.length === 1 ? 'Item' : 'Items'}
             </p>
           )}
-        </div>
+        </motion.div>
       </div>
 
       <main className="py-16 flex-grow">
@@ -127,8 +133,8 @@ function ShopContent() {
           )}
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-12">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+            {products.map((product, index) => (
+              <ProductCard key={product.id} product={product} index={index} />
             ))}
           </div>
 

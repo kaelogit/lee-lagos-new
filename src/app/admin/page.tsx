@@ -4,6 +4,22 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "../../lib/supabase";
 import { TrendingUp, ShoppingBag, AlertCircle, Package, ArrowUpRight, Clock } from "lucide-react";
+import ProductImage from "../../components/ProductImage";
+
+type LatestOrder = {
+  id: string;
+  customer_name: string;
+  total_amount: number;
+  order_status: string | null;
+  created_at: string;
+};
+
+type StockPiece = {
+  id: string;
+  name: string;
+  stock: number | null;
+  images: string[] | null;
+};
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -13,32 +29,70 @@ export default function AdminDashboard() {
     preOrderCount: 0,
     outOfStockItems: 0,
   });
+  const [latestOrders, setLatestOrders] = useState<LatestOrder[]>([]);
+  const [outOfStock, setOutOfStock] = useState<StockPiece[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     const fetchStats = async () => {
-      const { data: orders, error: ordersError } = await supabase
-        .from("orders")
-        .select("total_amount, order_status");
+      const [
+        revenueResult,
+        ordersCount,
+        processingCount,
+        preOrderCount,
+        stockCount,
+        latestResult,
+        stockResult,
+      ] = await Promise.all([
+        supabase.from("orders").select("total_amount"),
+        supabase.from("orders").select("id", { count: "exact", head: true }),
+        supabase.from("orders").select("id", { count: "exact", head: true }).eq("order_status", "processing"),
+        supabase.from("orders").select("id", { count: "exact", head: true }).eq("order_status", "pre-order"),
+        supabase.from("products").select("id", { count: "exact", head: true }).or("stock.lte.0,in_stock.eq.false"),
+        supabase
+          .from("orders")
+          .select("id, customer_name, total_amount, order_status, created_at")
+          .order("created_at", { ascending: false })
+          .limit(5),
+        supabase
+          .from("products")
+          .select("id, name, stock, images")
+          .or("stock.lte.0,in_stock.eq.false")
+          .order("name")
+          .limit(6),
+      ]);
 
-      const { data: products, error: productsError } = await supabase
-        .from("products")
-        .select("stock, in_stock");
+      const failed = [
+        revenueResult.error,
+        ordersCount.error,
+        processingCount.error,
+        preOrderCount.error,
+        stockCount.error,
+        latestResult.error,
+        stockResult.error,
+      ].find(Boolean);
 
-      if (!ordersError && !productsError && orders && products) {
-        const revenue = orders.reduce((sum, order) => sum + Number(order.total_amount), 0);
-        const processing = orders.filter((o) => o.order_status === "processing").length;
-        const preOrders = orders.filter((o) => o.order_status === "pre-order").length;
-        const outOfStock = products.filter((p) => p.stock <= 0 || p.in_stock === false).length;
-
-        setStats({
-          totalRevenue: revenue,
-          totalOrders: orders.length,
-          processingOrders: processing,
-          preOrderCount: preOrders,
-          outOfStockItems: outOfStock,
-        });
+      if (failed) {
+        setLoadError("The overview could not be loaded. Refresh the page and try again.");
+        setLoading(false);
+        return;
       }
+
+      const revenue = (revenueResult.data || []).reduce(
+        (sum, order) => sum + Number(order.total_amount),
+        0
+      );
+
+      setStats({
+        totalRevenue: revenue,
+        totalOrders: ordersCount.count || 0,
+        processingOrders: processingCount.count || 0,
+        preOrderCount: preOrderCount.count || 0,
+        outOfStockItems: stockCount.count || 0,
+      });
+      setLatestOrders(latestResult.data || []);
+      setOutOfStock(stockResult.data || []);
       setLoading(false);
     };
 
@@ -55,8 +109,16 @@ export default function AdminDashboard() {
     );
   }
 
+  if (loadError) {
+    return (
+      <div className="max-w-6xl">
+        <p className="text-sm text-lee-red">{loadError}</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="animate-in fade-in duration-500 max-w-5xl">
+    <div className="animate-in fade-in duration-500 max-w-6xl">
       <div className="mb-10">
         <h1 className="text-xs font-bold uppercase tracking-[0.2em] text-lee-black border-b border-lee-light-grey pb-4 mb-1">
           Business Overview
@@ -151,6 +213,64 @@ export default function AdminDashboard() {
           </p>
           <span className="text-[9px] uppercase tracking-widest text-lee-grey mt-2">View pre-orders →</span>
         </Link>
+      </div>
+
+      <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <section className="bg-lee-white border border-lee-light-grey rounded-sm">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-lee-light-grey">
+            <h2 className="text-[10px] font-bold uppercase tracking-[0.2em]">Latest orders</h2>
+            <Link href="/admin/orders" className="text-[10px] uppercase tracking-widest text-lee-grey hover:text-lee-black">
+              View all
+            </Link>
+          </div>
+          {latestOrders.length === 0 ? (
+            <p className="px-6 py-8 text-sm text-lee-grey">No orders yet.</p>
+          ) : (
+            <ul>
+              {latestOrders.map((order) => (
+                <li key={order.id} className="px-6 py-4 border-b border-lee-light-grey last:border-b-0 flex items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{order.customer_name}</p>
+                    <p className="text-[10px] uppercase tracking-widest text-lee-grey mt-1">
+                      {new Date(order.created_at).toLocaleDateString("en-NG", { day: "numeric", month: "short" })}
+                      {" · "}
+                      {order.order_status || "new"}
+                    </p>
+                  </div>
+                  <p className="font-mono text-sm shrink-0">₦{Number(order.total_amount).toLocaleString()}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section className="bg-lee-white border border-lee-light-grey rounded-sm">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-lee-light-grey">
+            <h2 className="text-[10px] font-bold uppercase tracking-[0.2em]">Out of stock</h2>
+            <Link href="/admin/inventory" className="text-[10px] uppercase tracking-widest text-lee-grey hover:text-lee-black">
+              Inventory
+            </Link>
+          </div>
+          {outOfStock.length === 0 ? (
+            <p className="px-6 py-8 text-sm text-lee-grey">Every piece has stock.</p>
+          ) : (
+            <ul>
+              {outOfStock.map((piece) => (
+                <li key={piece.id} className="px-6 py-3 border-b border-lee-light-grey last:border-b-0 flex items-center gap-4">
+                  <div className="relative w-10 h-12 bg-lee-light-grey shrink-0 overflow-hidden">
+                    <ProductImage src={piece.images?.[0]} alt={piece.name} fill className="object-cover" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium truncate">{piece.name}</p>
+                    <p className="text-[10px] uppercase tracking-widest text-lee-red mt-1">
+                      Stock {piece.stock ?? 0}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       </div>
 
       <div className="mt-10 pt-8 border-t border-lee-light-grey flex flex-wrap gap-4">

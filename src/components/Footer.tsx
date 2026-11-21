@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { MapPin, Phone, Mail, ArrowUpRight } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function Footer() {
   return (
@@ -12,9 +13,15 @@ export default function Footer() {
             1. GIANT BRAND TYPOGRAPHY (Mobile Adjusted)
            ========================================= */}
         <div className="mb-12 md:mb-24">
-          <h2 className="font-heading text-5xl sm:text-6xl md:text-7xl lg:text-[8rem] leading-none font-black uppercase tracking-tighter text-white">
-            Lee Lagos.
-          </h2>
+          <motion.h2
+            className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-none font-black uppercase tracking-tighter text-white"
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.45, ease: "easeOut" }}
+          >
+            Lee's Jewellers.
+          </motion.h2>
         </div>
 
         {/* =========================================
@@ -99,7 +106,7 @@ export default function Footer() {
           
           {/* Copyright */}
           <p className="text-[10px] text-gray-500 uppercase tracking-widest order-2 lg:order-1 text-center lg:text-left w-full lg:w-auto">
-            © {new Date().getFullYear()} Lee Lagos. All rights reserved.
+            © {new Date().getFullYear()} Lee's Jewellers. All rights reserved.
           </p>
           
           {/* Luxury Text-Based Social Links */}

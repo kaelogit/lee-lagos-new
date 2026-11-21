@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase"; 
 import ProductCard from "./ProductCard";
+import Reveal from "./Reveal";
 import Link from "next/link";
 
 export default function NewArrivals() {
@@ -54,7 +55,8 @@ export default function NewArrivals() {
   }, [activeTab]);
 
   return (
-    <section className="lee-container py-16 lg:py-24 animate-in fade-in duration-700">
+    <Reveal>
+    <section className="lee-container py-16 lg:py-24">
       
       {/* 1. HEADER & TABS (Mobile Optimized) */}
       <div className="flex flex-col md:flex-row items-center justify-between mb-12 space-y-8 md:space-y-0">
@@ -102,8 +104,8 @@ export default function NewArrivals() {
       ) : (
         <>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-10">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} /> 
+            {products.map((product, index) => (
+              <ProductCard key={product.id} product={product} index={index} />
             ))}
           </div>
 
@@ -119,5 +121,6 @@ export default function NewArrivals() {
       )}
 
     </section>
+    </Reveal>
   );
 }

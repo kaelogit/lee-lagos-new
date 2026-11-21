@@ -1,30 +1,38 @@
-'use client'
+"use client";
 
-import { useEffect } from 'react'
-import Lenis from 'lenis'
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
+import Lenis from "lenis";
 
 export default function SmoothScroll() {
+  const pathname = usePathname();
+  const isAdmin = pathname?.startsWith("/admin");
+
   useEffect(() => {
+    if (isAdmin) return;
+
     const lenis = new Lenis({
-      duration: 1.2, // The "Weight" (Higher = heavier/more expensive feel)
+      duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation: 'vertical',
-      gestureOrientation: 'vertical',
+      orientation: "vertical",
+      gestureOrientation: "vertical",
       smoothWheel: true,
       touchMultiplier: 2,
-    })
+    });
 
-    function raf(time: number) {
-      lenis.raf(time)
-      requestAnimationFrame(raf)
-    }
+    let frame = 0;
+    const raf = (time: number) => {
+      lenis.raf(time);
+      frame = requestAnimationFrame(raf);
+    };
 
-    requestAnimationFrame(raf)
+    frame = requestAnimationFrame(raf);
 
     return () => {
-      lenis.destroy()
-    }
-  }, [])
+      cancelAnimationFrame(frame);
+      lenis.destroy();
+    };
+  }, [isAdmin]);
 
-  return null
+  return null;
 }

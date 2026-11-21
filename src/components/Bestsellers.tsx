@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { supabase } from "../lib/supabase"; 
 import ProductCard from "./ProductCard";
+import Reveal from "./Reveal";
 
 export default function Bestsellers() {
   const [products, setProducts] = useState<any[]>([]);
@@ -38,6 +39,7 @@ export default function Bestsellers() {
   if (!loading && products.length === 0) return null;
 
   return (
+    <Reveal>
     <section className="bg-white py-20 lg:py-32">
       <div className="lee-container">
         
@@ -65,9 +67,9 @@ export default function Bestsellers() {
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-10 md:gap-x-8 md:gap-y-16">
-            {products.map((product) => (
+            {products.map((product, index) => (
               <div key={product.id}>
-                <ProductCard product={product} />
+                <ProductCard product={product} index={index} />
               </div>
             ))}
           </div>
@@ -78,5 +80,6 @@ export default function Bestsellers() {
 
       </div>
     </section>
+    </Reveal>
   );
 }

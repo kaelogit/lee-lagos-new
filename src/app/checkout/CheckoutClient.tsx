@@ -10,6 +10,7 @@ import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import { usePaystackPayment } from "react-paystack";
 import { supabase } from "../../lib/supabase";
+import { discountPercent } from "../../lib/utils";
 
 export default function CheckoutClient() {
   const router = useRouter();
@@ -316,6 +317,11 @@ export default function CheckoutClient() {
                             <span className={`text-sm font-bold font-mono ${item.original_price ? 'text-red-600' : 'text-black'}`}>
                               ₦{(item.price * item.quantity).toLocaleString()}
                             </span>
+                            {item.original_price && discountPercent(item.original_price, item.price) > 0 && (
+                              <span className="text-[9px] font-bold uppercase tracking-widest text-red-600 block">
+                                {discountPercent(item.original_price, item.price)}% off
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>

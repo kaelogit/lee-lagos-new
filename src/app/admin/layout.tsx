@@ -100,9 +100,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="p-6 lg:p-8">
           <Link
             href="/"
-            className="block font-heading text-2xl font-bold uppercase tracking-tighter text-lee-black mb-2 hover:opacity-70 transition-opacity"
+            className="block font-heading text-lg leading-tight font-bold uppercase tracking-tight text-lee-black mb-2 hover:opacity-70 transition-opacity"
           >
-            Lee Lagos
+            Lee's Jewellers
           </Link>
           <p className="text-[10px] uppercase tracking-[0.25em] text-lee-grey mb-10">
             The Standard.
@@ -125,7 +125,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Mobile Top Bar */}
         <div className="md:hidden flex items-center justify-between p-6 border-b border-lee-light-grey bg-lee-white z-30 shrink-0">
           <Link href="/" className="font-heading text-xl font-bold uppercase tracking-tighter text-lee-black">
-            Lee Lagos
+            Lee's Jewellers
           </Link>
           <button
             onClick={() => setIsMobileMenuOpen(true)}
@@ -157,7 +157,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="p-6">
               <div className="flex items-center justify-between mb-8">
                 <span className="font-heading text-xl font-bold uppercase tracking-tighter text-lee-black">
-                  Lee Lagos
+                  Lee's Jewellers
                 </span>
                 <button
                   onClick={() => setIsMobileMenuOpen(false)}

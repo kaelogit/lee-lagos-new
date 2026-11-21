@@ -3,7 +3,10 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Tag } from "lucide-react";
-import { supabase } from "../lib/supabase"; 
+import { supabase } from "../lib/supabase";
+import Reveal from "./Reveal";
+import { motion } from "framer-motion";
+import { discountPercent } from "../lib/utils"; 
 
 export default function OnSale() {
   const [products, setProducts] = useState<any[]>([]);
@@ -37,6 +40,7 @@ export default function OnSale() {
   if (!loading && products.length === 0) return null;
 
   return (
+    <Reveal>
     <section className="bg-[#fcfcfc] py-20 lg:py-24 border-y border-gray-100">
       <div className="lee-container">
         
@@ -73,19 +77,32 @@ export default function OnSale() {
           </div>
         ) : (
           <div ref={scrollRef} className="flex overflow-x-auto pb-10 scrollbar-hide snap-x snap-mandatory">
-            {products.map((product) => {
+            {products.map((product, index) => {
               const standardPrice = Number(product.price);
               const salePrice = Number(product.sale_price);
+              const off = discountPercent(standardPrice, salePrice);
+              const showSale = off > 0;
 
               return (
+                <motion.div
+                  key={product.id}
+                  className="shrink-0 snap-center"
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, ease: "easeOut", delay: Math.min(index, 6) * 0.05 }}
+                >
                 <Link 
                   href={`/product/${product.id}`} 
-                  key={product.id} 
-                  className="relative block shrink-0 snap-center w-[350px] h-[480px] md:w-[450px] md:h-[600px] overflow-hidden group shadow-sm hover:shadow-xl transition-shadow duration-300"
+                  className="relative block w-[350px] h-[480px] md:w-[450px] md:h-[600px] overflow-hidden group shadow-sm hover:shadow-xl transition-shadow duration-300"
                 >
-                  {/* IMAGE */}
+                  {showSale && (
+                    <span className="absolute top-6 left-6 z-10 bg-red-600 text-white text-[10px] md:text-xs font-bold px-3 py-1.5 uppercase tracking-widest">
+                      {off}% off
+                    </span>
+                  )}
                   <img
-                    src={product.images[0] || "/placeholder.jpg"}
+                    src={product.images?.[0] || "/placeholder.jpg"}
                     alt={product.name}
                     className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                   />
@@ -93,7 +110,7 @@ export default function OnSale() {
                   {/* THE EDITORIAL SPLIT-BADGE */}
                   <div className="absolute bottom-6 left-6 md:bottom-8 md:left-8 flex shadow-2xl pointer-events-none z-10">
                     
-                    {/* Retail Price Side (Solid Black) */}
+                    {showSale && (
                     <div className="bg-black px-4 py-3 md:px-5 md:py-4 flex flex-col justify-center">
                       <span className="text-[8px] md:text-[9px] uppercase tracking-[0.2em] text-gray-400 mb-1">
                         Retail
@@ -102,6 +119,7 @@ export default function OnSale() {
                         ₦{standardPrice.toLocaleString()}
                       </span>
                     </div>
+                    )}
 
                     {/* Sale Price Side (Solid White) */}
                     <div className="bg-white px-4 py-3 md:px-5 md:py-4 flex flex-col justify-center">
@@ -109,12 +127,13 @@ export default function OnSale() {
                         Now
                       </span>
                       <span className="text-sm md:text-lg font-bold font-mono text-black">
-                        ₦{salePrice.toLocaleString()}
+                        ₦{(showSale ? salePrice : standardPrice).toLocaleString()}
                       </span>
                     </div>
 
                   </div>
                 </Link>
+                </motion.div>
               );
             })}
           </div>
@@ -122,5 +141,6 @@ export default function OnSale() {
 
       </div>
     </section>
+    </Reveal>
   );
 }

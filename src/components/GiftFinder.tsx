@@ -4,6 +4,7 @@ import { useState } from "react";
 import ProductImage from "./ProductImage";
 import { ArrowRight, RefreshCw, Gift, Check } from "lucide-react";
 import { supabase } from "../lib/supabase";
+import Reveal from "./Reveal";
 
 export default function GiftFinder() {
   const [step, setStep] = useState(0); 
@@ -99,6 +100,7 @@ export default function GiftFinder() {
   };
 
   return (
+    <Reveal>
     <section className="lee-container py-24 border-t border-gray-100 bg-white">
       
       {/* HEADER */}
@@ -215,5 +217,6 @@ export default function GiftFinder() {
 
       </div>
     </section>
+    </Reveal>
   );
 }

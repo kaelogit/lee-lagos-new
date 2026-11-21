@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { Search, ShoppingBag, Menu, X, ChevronDown, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
+import { discountPercent } from "../lib/utils";
 import { useCart } from "../context/CartContext"; 
 import { supabase } from "../lib/supabase"; 
 import CartDrawer from "./CartDrawer"; // NEW: The Cart Drawer Component
@@ -128,7 +130,12 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
+    <motion.nav
+      className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm"
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: "easeOut" }}
+    >
       <div className="lee-container relative">
         <div className="flex items-center justify-between h-20">
           
@@ -167,7 +174,9 @@ export default function Navbar() {
                   ) : searchResults.length > 0 ? (
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
                       {searchResults.map((product) => {
-                        const price = product.on_sale && product.sale_price ? product.sale_price : product.price;
+                        const onSale = product.on_sale && product.sale_price && Number(product.sale_price) < Number(product.price);
+                        const price = onSale ? product.sale_price : product.price;
+                        const off = onSale ? discountPercent(Number(product.price), Number(product.sale_price)) : 0;
                         
                         return (
                           <Link 
@@ -187,8 +196,9 @@ export default function Navbar() {
                               <h3 className="text-xs font-bold text-black truncate group-hover:text-gray-500 transition-colors">
                                 {product.name}
                               </h3>
-                              <p className="text-sm font-bold font-mono text-red-600 mt-1">
+                              <p className={`text-sm font-bold font-mono mt-1 ${onSale ? "text-red-600" : "text-black"}`}>
                                 ₦{Number(price).toLocaleString()}
+                                {off > 0 && <span className="ml-2 text-[10px] uppercase tracking-widest">{off}% off</span>}
                               </p>
                             </div>
                           </Link>
@@ -219,8 +229,8 @@ export default function Navbar() {
 
               {/* 2. LOGO */}
               <div className="flex-1 lg:flex-none flex justify-center lg:justify-start">
-                <Link href="/" className="font-heading text-2xl font-bold tracking-tight uppercase">
-                  Lee<span className="font-light">Lagos</span>
+                <Link href="/" className="font-heading text-lg sm:text-2xl font-bold tracking-tight uppercase">
+                  Lee's<span className="font-light"> Jewellers</span>
                 </Link>
               </div>
 
@@ -271,9 +281,15 @@ export default function Navbar() {
                 >
                   <ShoppingBag size={22} strokeWidth={1.5} />
                   {cartCount > 0 && (
-                    <span className="absolute -top-1.5 -right-2 bg-red-600 text-white text-[10px] w-[18px] h-[18px] flex items-center justify-center rounded-full font-bold shadow-sm">
+                    <motion.span
+                      key={cartCount}
+                      initial={{ scale: 0.6 }}
+                      animate={{ scale: 1 }}
+                      transition={{ duration: 0.25, ease: "easeOut" }}
+                      className="absolute -top-1.5 -right-2 bg-red-600 text-white text-[10px] w-[18px] h-[18px] flex items-center justify-center rounded-full font-bold shadow-sm"
+                    >
                       {cartCount}
-                    </span>
+                    </motion.span>
                   )}
                 </button>
               </div>
@@ -335,6 +351,6 @@ export default function Navbar() {
       {/* 6. CART DRAWER COMPONENT */}
       <CartDrawer isOpen={isCartOpen} setIsOpen={setIsCartOpen} />
 
-    </nav>
+    </motion.nav>
   );
 }

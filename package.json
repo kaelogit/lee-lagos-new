@@ -6,9 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "migrate-images": "node scripts/migrate-images-to-r2.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1175.0",
     "@supabase/supabase-js": "^2.96.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.34.1",

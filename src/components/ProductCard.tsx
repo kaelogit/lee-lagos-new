@@ -2,15 +2,18 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import ProductImage from "./ProductImage";
 import { ShoppingBag, Check } from "lucide-react"; 
-import { useCart } from "../context/CartContext"; 
+import { useCart } from "../context/CartContext";
+import { discountPercent } from "../lib/utils"; 
 
 interface ProductProps {
   product: any;
+  index?: number;
 }
 
-export default function ProductCard({ product }: ProductProps) {
+export default function ProductCard({ product, index = 0 }: ProductProps) {
   const { addToCart } = useCart();
   const [isAdded, setIsAdded] = useState(false);
   const [isDropActive, setIsDropActive] = useState(false);
@@ -39,14 +42,12 @@ export default function ProductCard({ product }: ProductProps) {
   if (isDropActive && product.early_access_price) {
     currentPrice = Number(product.early_access_price);
     originalPrice = standardPrice;
-  } else if (product.on_sale && product.sale_price) {
-    currentPrice = Number(product.sale_price); 
-    originalPrice = standardPrice; 
+  } else if (product.on_sale && product.sale_price && Number(product.sale_price) < standardPrice) {
+    currentPrice = Number(product.sale_price);
+    originalPrice = standardPrice;
   }
 
-  const discount = originalPrice && originalPrice > currentPrice
-    ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
-    : 0;
+  const discount = originalPrice ? discountPercent(originalPrice, currentPrice) : 0;
 
   // SAFE IMAGE CHECKER
   const mainImage = product.images?.[0] || "/placeholder.jpg";
@@ -75,7 +76,13 @@ export default function ProductCard({ product }: ProductProps) {
   };
 
   return (
-    <div className="group relative flex flex-col gap-3">
+    <motion.div
+      className="group relative flex flex-col gap-3"
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.4, ease: "easeOut", delay: Math.min(index, 8) * 0.05 }}
+    >
       
       {/* =========================================
           1. THE IMAGE CONTAINER (Plain & Clean)
@@ -126,7 +133,7 @@ export default function ProductCard({ product }: ProductProps) {
 
           {product.on_sale && !isDropActive && discount > 0 && (
             <span className="bg-red-600 text-white text-[10px] font-bold px-3 py-1 uppercase tracking-widest shadow-sm rounded-full">
-              -{discount}%
+              {discount}% off
             </span>
           )}
         </div>
@@ -185,6 +192,6 @@ export default function ProductCard({ product }: ProductProps) {
           </span>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

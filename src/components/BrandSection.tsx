@@ -3,7 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { supabase } from "../lib/supabase"; 
+import { supabase } from "../lib/supabase";
+import { motion } from "framer-motion"; 
 
 // 1. THE MASSIVE WATCH DICTIONARY (Universal Coverage)
 const LOGO_DICTIONARY: Record<string, string> = {
@@ -146,12 +147,18 @@ export default function BrandSection() {
       <div className="lee-container">
         
         {/* 1. HEADER */}
-        <div className="relative z-10 pointer-events-none mb-16 text-center lg:text-left">
+        <motion.div
+          className="relative z-10 pointer-events-none mb-16 text-center lg:text-left"
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.45, ease: "easeOut" }}
+        >
           <h2 className="font-heading text-4xl lg:text-5xl font-bold uppercase tracking-tighter text-black">
             The Watch <br /> Collection.
           </h2>
           <div className="h-1 w-20 bg-black mt-6 mx-auto lg:mx-0"></div>
-        </div>
+        </motion.div>
 
         {/* 2. SPOTLIGHT (Desktop Only) */}
         {isHovering && (

@@ -12,6 +12,8 @@ import Navbar from "../../../components/Navbar";
 import Footer from "../../../components/Footer";
 import ProductCard from "../../../components/ProductCard";
 import { useCart } from "../../../context/CartContext";
+import { motion } from "framer-motion";
+import { discountPercent } from "../../../lib/utils";
 
 export default function ProductClientPage({ id }: { id: string }) {
   const [product, setProduct] = useState<any>(null);
@@ -123,11 +125,13 @@ export default function ProductClientPage({ id }: { id: string }) {
     if (isDropActive && product.early_access_price) {
       currentPrice = Number(product.early_access_price);
       originalPrice = standardPrice;
-    } else if (product.on_sale && product.sale_price) {
+    } else if (product.on_sale && product.sale_price && Number(product.sale_price) < standardPrice) {
       currentPrice = Number(product.sale_price);
       originalPrice = standardPrice;
     }
   }
+
+  const off = originalPrice ? discountPercent(originalPrice, currentPrice) : 0;
 
   // ADD TO BAG
   const handleAddToCart = () => {
@@ -158,7 +162,7 @@ export default function ProductClientPage({ id }: { id: string }) {
 
   const shareToSocial = (platform: string) => {
     const url = encodeURIComponent(window.location.href);
-    const text = encodeURIComponent(`Check out this ${product.name} on Lee Lagos.`);
+    const text = encodeURIComponent(`Check out this ${product.name} on Lee's Jewellers.`);
     
     let link = "";
     if (platform === 'whatsapp') link = `https://wa.me/?text=${text}%20${url}`;
@@ -181,8 +185,8 @@ export default function ProductClientPage({ id }: { id: string }) {
 
   const isSoldOut = !product.in_stock && !isDropActive;
   const whatsappText = isSoldOut
-    ? `Hello Lee Lagos, I would like to *pre-order* the ${product.name}. It is currently showing as out of stock on your website. Please confirm availability, price and expected delivery time. Thank you!`
-    : `Hello Lee Lagos, I am interested in the ${product.name} (Qty: ${quantity}). Could you please send me a video of this soon as you're chanced so I can see the details? Thank you!`;
+    ? `Hello Lee's Jewellers, I would like to *pre-order* the ${product.name}. It is currently showing as out of stock on your website. Please confirm availability, price and expected delivery time. Thank you!`
+    : `Hello Lee's Jewellers, I am interested in the ${product.name} (Qty: ${quantity}). Could you please send me a video of this soon as you're chanced so I can see the details? Thank you!`;
 
   return (
     <div className="bg-white min-h-screen">
@@ -217,13 +221,21 @@ export default function ProductClientPage({ id }: { id: string }) {
             {/* PHOTOS */}
             <div className="space-y-4 h-fit">
               <div className="relative aspect-square bg-[#fcfcfc] overflow-hidden rounded-sm">
-                <ProductImage
-                  src={product.images[activeImage]}
-                  alt={product.name}
-                  fill
-                  className="object-cover"
-                  priority
-                />
+                <motion.div
+                  key={product.images[activeImage]}
+                  className="absolute inset-0"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.35, ease: "easeOut" }}
+                >
+                  <ProductImage
+                    src={product.images[activeImage]}
+                    alt={product.name}
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                </motion.div>
               </div>
               {product.images?.length > 1 && (
                 <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
@@ -239,7 +251,12 @@ export default function ProductClientPage({ id }: { id: string }) {
             </div>
 
             {/* PRODUCT DETAILS */}
-            <div className="flex flex-col justify-center">
+            <motion.div
+              className="flex flex-col justify-center"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+            >
               <h1 className="font-heading text-2xl md:text-3xl font-bold uppercase tracking-tighter mb-2 text-black leading-none mt-4 md:mt-0">
                 {product.name}
               </h1>
@@ -276,6 +293,11 @@ export default function ProductClientPage({ id }: { id: string }) {
                   {originalPrice && (
                     <span className="text-lg text-gray-400 line-through decoration-gray-400">
                       ₦{originalPrice.toLocaleString()}
+                    </span>
+                  )}
+                  {off > 0 && (
+                    <span className="bg-red-600 text-white text-[10px] font-bold px-3 py-1 uppercase tracking-widest rounded-full">
+                      {off}% off
                     </span>
                   )}
                 </div>
@@ -347,7 +369,7 @@ export default function ProductClientPage({ id }: { id: string }) {
                 </div>
               </div>
 
-            </div>
+            </motion.div>
           </div>
 
           {/* SIMILAR ITEMS */}
@@ -361,9 +383,9 @@ export default function ProductClientPage({ id }: { id: string }) {
                 </div>
               </div>
               <div ref={sliderRef} className="flex gap-6 overflow-x-auto pb-8 scrollbar-hide snap-x snap-mandatory">
-                {relatedProducts.map((item) => (
+                {relatedProducts.map((item, index) => (
                   <div key={item.id} className="min-w-[200px] md:min-w-[220px] snap-start">
-                    <ProductCard product={item} />
+                    <ProductCard product={item} index={index} />
                   </div>
                 ))}
               </div>

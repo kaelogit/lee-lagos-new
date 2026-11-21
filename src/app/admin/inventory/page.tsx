@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "../../../lib/supabase";
+import { deleteStoredImages, removeImageBackground, uploadProductImage } from "../../../lib/admin-images";
+import { discountPercent } from "../../../lib/utils";
 import { Plus, X, Edit2, Clock, Star, Sparkles, UploadCloud, Trash2, Tag, Wand2, Loader2, Ban } from "lucide-react";
 import Image from "next/image";
 import ProductImage from "../../../components/ProductImage";
@@ -73,6 +75,7 @@ export default function AdminInventoryPage() {
   // Image Upload & AI State
   const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [removedImageUrls, setRemovedImageUrls] = useState<string[]>([]);
   const [bgProcessingIndex, setBgProcessingIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -156,6 +159,14 @@ export default function AdminInventoryPage() {
   const deleteProduct = async (id: string) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this piece? This action cannot be undone.");
     if (!confirmDelete) return;
+
+    const product = products.find((item) => item.id === id);
+    try {
+      await deleteStoredImages(product?.images || []);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "The photos could not be deleted.");
+      return;
+    }
 
     const { error } = await supabase.from("products").delete().eq("id", id);
     if (error) alert("Error deleting product: " + error.message);
@@ -245,61 +256,16 @@ export default function AdminInventoryPage() {
     setPreviewUrls(prev => [...prev, ...newPreviews]);
   };
 
-  const removeBackgroundWithRotation = async (file: File): Promise<File | null> => {
-    const API_KEYS = [
-      process.env.NEXT_PUBLIC_REMOVE_BG_KEY_1,
-      process.env.NEXT_PUBLIC_REMOVE_BG_KEY_2,
-      process.env.NEXT_PUBLIC_REMOVE_BG_KEY_3,
-      process.env.NEXT_PUBLIC_REMOVE_BG_KEY_4,
-    ].filter(Boolean);
-
-    if (API_KEYS.length === 0) {
-      alert("No Remove.bg API keys found in environment variables.");
-      return null;
-    }
-
-    for (let i = 0; i < API_KEYS.length; i++) {
-      const key = API_KEYS[i];
-      try {
-        const formData = new FormData();
-        formData.append('image_file', file);
-        formData.append('size', 'auto');
-
-        const response = await fetch('https://api.remove.bg/v1.0/removebg', {
-          method: 'POST',
-          headers: { 'X-Api-Key': key as string },
-          body: formData
-        });
-
-        if (response.ok) {
-          const blob = await response.blob();
-          const newName = file.name.replace(/\.[^/.]+$/, "") + "-nobg.png";
-          return new File([blob], newName, { type: 'image/png' });
-        } 
-        
-        if (response.status === 402 || response.status === 429 || response.status === 403) {
-          console.warn(`Key ${i + 1} exhausted. Failing over to next key...`);
-          continue; 
-        }
-
-        console.error("Remove BG Error:", await response.text());
-        alert("Background removal failed. The AI couldn't detect a clear subject. Please try a different image.");
-        return null;
-
-      } catch (error) {
-        console.error(`Fetch failed on key ${i+1}`, error);
-      }
-    }
-
-    alert("Background removal service is temporarily unavailable. Please try another image.");
-    return null;
-  };
-
   const executeBackgroundRemoval = async (index: number) => {
     setBgProcessingIndex(index);
     const fileToProcess = newImageFiles[index];
-    
-    const processedFile = await removeBackgroundWithRotation(fileToProcess);
+
+    let processedFile: File | null = null;
+    try {
+      processedFile = await removeImageBackground(fileToProcess);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Background removal failed. Please try another photo.");
+    }
     
     if (processedFile) {
       const updatedFiles = [...newImageFiles];
@@ -314,6 +280,8 @@ export default function AdminInventoryPage() {
   };
 
   const removeExistingImage = (indexToRemove: number) => {
+    const url = formData.images[indexToRemove];
+    if (url) setRemovedImageUrls((prev) => [...prev, url]);
     setFormData({
       ...formData,
       images: formData.images.filter((_, index) => index !== indexToRemove)
@@ -329,6 +297,7 @@ export default function AdminInventoryPage() {
     setFormData(emptyProduct);
     setNewImageFiles([]);
     setPreviewUrls([]);
+    setRemovedImageUrls([]);
     setIsCustomSubcategory(true); 
     setIsFormOpen(true);
   };
@@ -351,6 +320,7 @@ export default function AdminInventoryPage() {
     setFormData(normalized);
     setNewImageFiles([]);
     setPreviewUrls([]);
+    setRemovedImageUrls([]);
     setIsCustomSubcategory(false);
     setIsFormOpen(true);
   };
@@ -362,6 +332,16 @@ export default function AdminInventoryPage() {
       `All products in this subcategory will be permanently deleted.`
     );
     if (!confirmed) return;
+
+    const doomed = products.filter(
+      (item) => item.category === formData.category && item.subcategory === formData.subcategory
+    );
+    try {
+      await deleteStoredImages(doomed.flatMap((item) => item.images || []));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "The photos could not be deleted.");
+      return;
+    }
 
     const { error } = await supabase
       .from("products")
@@ -410,24 +390,19 @@ export default function AdminInventoryPage() {
 
     if (newImageFiles.length > 0) {
       const uploadedUrls: string[] = [];
-      for (const file of newImageFiles) {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from("product_images")
-          .upload(fileName, file);
-
-        if (!uploadError) {
-          const { data: publicUrlData } = supabase.storage
-            .from("product_images")
-            .getPublicUrl(fileName);
-          uploadedUrls.push(publicUrlData.publicUrl);
-        } else {
-          console.error("Image Upload Error:", uploadError);
+      try {
+        for (const file of newImageFiles) {
+          uploadedUrls.push(await uploadProductImage(file));
         }
+      } catch (err) {
+        if (uploadedUrls.length > 0) {
+          await deleteStoredImages(uploadedUrls).catch(() => {});
+        }
+        alert(err instanceof Error ? err.message : "The photo could not be uploaded.");
+        setSaving(false);
+        return;
       }
-      productToSave.images = [...productToSave.images, ...uploadedUrls];
+      productToSave.images = [...(productToSave.images || []), ...uploadedUrls];
     }
 
     if (!productToSave.id) {
@@ -460,7 +435,16 @@ export default function AdminInventoryPage() {
       }
     }
 
-    await fetchProducts(); 
+    if (removedImageUrls.length > 0) {
+      try {
+        await deleteStoredImages(removedImageUrls);
+      } catch (err) {
+        alert(err instanceof Error ? err.message : "The piece was saved, but a removed photo could not be deleted.");
+      }
+    }
+
+    await fetchProducts();
+    setRemovedImageUrls([]);
     setIsFormOpen(false);
     setSaving(false);
   };
@@ -860,10 +844,17 @@ export default function AdminInventoryPage() {
                       <Tag size={16} className={formData.on_sale ? "text-red-600" : "text-gray-400"} />
                       <span className={`text-xs font-bold uppercase tracking-widest ${formData.on_sale ? 'text-red-600' : 'text-black'}`}>Active Sale</span>
                     </label>
-                    <div className={`transition-all overflow-hidden ${formData.on_sale ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0'}`}>
+                    <div className={`transition-all overflow-hidden ${formData.on_sale ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}>
                       <div className="pt-2">
                         <label className="block text-[9px] uppercase tracking-widest text-red-600 mb-2 font-bold">Discounted Sale Price (₦)</label>
                         <input type="number" name="sale_price" value={formData.sale_price || ""} onChange={handleInputChange} className="w-full bg-transparent border-b border-red-200 h-10 outline-none focus:border-red-600 font-mono text-sm text-black rounded-none" />
+                        {formData.sale_price ? (
+                          <p className="mt-3 text-[10px] uppercase tracking-widest font-bold text-red-600">
+                            {discountPercent(Number(formData.price), Number(formData.sale_price)) > 0
+                              ? `${discountPercent(Number(formData.price), Number(formData.sale_price))}% off the regular price`
+                              : "The sale price needs to be lower than the regular price."}
+                          </p>
+                        ) : null}
                       </div>
                     </div>
                   </div>

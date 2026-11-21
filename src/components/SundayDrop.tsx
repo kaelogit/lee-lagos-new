@@ -5,7 +5,8 @@ import ProductImage from "./ProductImage";
 import Link from "next/link";
 import { Lock, ShoppingBag, Eye, ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { supabase } from "../lib/supabase";
-import { useCart } from "../context/CartContext"; 
+import { useCart } from "../context/CartContext";
+import Reveal from "./Reveal"; 
 
 // A type for our timer objects
 type TimeLeft = { days: number; hours: number; minutes: number; seconds: number };
@@ -125,6 +126,7 @@ export default function SundayDrop() {
   if (items.length === 0) return null;
 
   return (
+    <Reveal>
     <section className="bg-[#050505] text-white py-24 overflow-hidden relative border-y border-white/10">
       
       {/* AMBIENT GLOW BACKGROUND */}
@@ -282,5 +284,6 @@ export default function SundayDrop() {
         
       </div>
     </section>
+    </Reveal>
   );
 }

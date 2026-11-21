@@ -36,7 +36,7 @@ export default function AdminLoginPage() {
         {/* Brand */}
         <div className="text-center mb-10">
           <Link href="/" className="inline-block font-heading text-3xl font-bold uppercase tracking-tighter text-lee-black hover:opacity-80 transition-opacity">
-            Lee Lagos
+            Lee's Jewellers
           </Link>
           <p className="text-[10px] uppercase tracking-[0.3em] text-lee-grey mt-2">
             The Standard.
@@ -69,7 +69,7 @@ export default function AdminLoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-transparent border-b border-lee-light-grey h-11 outline-none focus:border-lee-black transition-colors text-sm font-medium text-lee-black rounded-none placeholder:text-lee-grey/70"
-                placeholder="admin@leelagos.com"
+                placeholder="admin@leesjewellers.com"
               />
             </div>
 

@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 export default function Hero() {
   return (
@@ -9,7 +12,13 @@ export default function Hero() {
         {/* =========================================
             1. THE MAIN HERO (60% Desktop, Full Width Mobile)
            ========================================= */}
-        <div className="lg:col-span-7 relative group overflow-hidden rounded-sm h-[400px] lg:h-full">
+        <motion.div
+          className="lg:col-span-7 relative group overflow-hidden rounded-sm h-[400px] lg:h-full"
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.45, ease: "easeOut" }}
+        >
           <Link href="/shop/Moissanite" className="block w-full h-full">
             <div className="absolute inset-0 w-full h-full">
               {/* FIXED SRC PATH */}
@@ -39,7 +48,7 @@ export default function Hero() {
               </button>
             </div>
           </Link>
-        </div>
+        </motion.div>
 
         {/* =========================================
             2. THE SIDE STACK (40% Desktop, 50/50 Mobile)
@@ -47,7 +56,13 @@ export default function Hero() {
         <div className="lg:col-span-5 grid grid-cols-2 lg:grid-cols-1 gap-3 lg:gap-4 h-[250px] lg:h-full">
           
           {/* TOP CARD: EYEGLASSES */}
-          <div className="relative group overflow-hidden rounded-sm h-full">
+          <motion.div
+            className="relative group overflow-hidden rounded-sm h-full"
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.45, ease: "easeOut", delay: 0.08 }}
+          >
             <Link href="/shop/Eyeglasses" className="block w-full h-full">
               {/* FIXED SRC PATH */}
               <Image 
@@ -68,10 +83,16 @@ export default function Hero() {
                 </span>
               </div>
             </Link>
-          </div>
+          </motion.div>
 
           {/* BOTTOM CARD: PERFUMES */}
-          <div className="relative group overflow-hidden rounded-sm h-full">
+          <motion.div
+            className="relative group overflow-hidden rounded-sm h-full"
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.45, ease: "easeOut", delay: 0.16 }}
+          >
             <Link href="/shop/Perfumes" className="block w-full h-full">
               {/* FIXED SRC PATH */}
               <Image 
@@ -92,7 +113,7 @@ export default function Hero() {
                 </span>
               </div>
             </Link>
-          </div>
+          </motion.div>
 
         </div>
       </div>

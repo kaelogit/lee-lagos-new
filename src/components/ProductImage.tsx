@@ -17,9 +17,9 @@ type ProductImageProps = {
 };
 
 /**
- * Renders a product image with:
- * - unoptimized for remote URLs (Supabase) so they always load
- * - Fallback to placeholder on error or missing src
+ * Renders a product image.
+ * Remote photos load straight from their host so the request does not pass through this site.
+ * Falls back to a placeholder when the photo is missing.
  */
 export default function ProductImage({
   src,
