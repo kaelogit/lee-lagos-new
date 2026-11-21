@@ -33,10 +33,10 @@ export const metadata: Metadata = {
     siteName: "Lees Jewellers",
     images: [
       {
-        url: '/og-image.jpg',
+        url: '/og-image.jpg?v=2',
         width: 1200,
         height: 630,
-        alt: "Lees Jewellers Luxury Collection",
+        alt: "Lees Jewellers & Optique",
       },
     ],
     locale: 'en_NG',
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: "LEES JEWELLERS | The Standard.",
     description: "The standard of luxury in Lagos.",
-    images: ['/og-image.jpg'], // Uses the same image
+    images: ['/og-image.jpg?v=2'],
   },
 };
 

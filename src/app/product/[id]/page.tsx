@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       description: `₦${Number(activePrice).toLocaleString()} - ${description}`,
       images: [
         {
-          url: product.images[0] || '/og-image.jpg',
+          url: product.images?.[0] || '/og-image.jpg?v=2',
           width: 800,
           height: 800,
           alt: product.name,
@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       card: 'summary_large_image',
       title: `${product.name} | LEES JEWELLERS`,
       description: `₦${Number(activePrice).toLocaleString()}`,
-      images: [product.images[0] || '/og-image.jpg'],
+      images: [product.images?.[0] || '/og-image.jpg?v=2'],
     }
   }
 }

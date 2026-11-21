@@ -227,9 +227,9 @@ export default function Navbar() {
                 </button>
               </div>
 
-              {/* 2. LOGO */}
-              <div className="flex-1 lg:flex-none flex justify-center lg:justify-start">
-                <Link href="/" className="font-heading text-lg sm:text-2xl font-bold tracking-tight uppercase">
+              {/* 2. LOGO — centered on the screen on phones, left on desktop */}
+              <div className="absolute left-1/2 -translate-x-1/2 lg:static lg:left-auto lg:translate-x-0 lg:flex-none flex justify-center">
+                <Link href="/" className="font-heading text-lg sm:text-2xl font-bold tracking-tight uppercase whitespace-nowrap">
                   Lees<span className="font-light"> Jewellers</span>
                 </Link>
               </div>
