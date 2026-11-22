@@ -9,12 +9,28 @@ import NewArrivals from "@/components/NewArrivals";
 import SundayDrop from "@/components/SundayDrop";
 import TrustSection from "@/components/TrustSection";
 import OnSale from "@/components/OnSale";
+import SaleBanner from "@/components/SaleBanner";
+import HomeSaleSections from "@/components/HomeSaleSections";
+import { getLiveSales } from "@/lib/sales";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const sales = await getLiveSales();
+  const slides = sales.flatMap((sale) =>
+    (sale.banners || []).map((src) => ({
+      src,
+      href: `/shop/${sale.slug}`,
+      alt: sale.name,
+    }))
+  );
+
   return (
     <div className="pb-20">
-      <Navbar />      
+      <Navbar />
+      <SaleBanner slides={slides} />
       <HeroSlider />
+      <HomeSaleSections sales={sales} />
       <NewArrivals />
       <BrandSection />
       <OnSale />

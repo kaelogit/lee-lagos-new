@@ -182,6 +182,84 @@ export type Database = {
         }
         Relationships: []
       }
+      sale_products: {
+        Row: {
+          previous_on_sale: boolean | null
+          previous_sale_price: number | null
+          prices_applied: boolean
+          product_id: string
+          sale_id: string
+        }
+        Insert: {
+          previous_on_sale?: boolean | null
+          previous_sale_price?: number | null
+          prices_applied?: boolean
+          product_id: string
+          sale_id: string
+        }
+        Update: {
+          previous_on_sale?: boolean | null
+          previous_sale_price?: number | null
+          prices_applied?: boolean
+          product_id?: string
+          sale_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sale_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sale_products_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales: {
+        Row: {
+          banners: string[]
+          created_at: string
+          discount_percent: number
+          ends_at: string
+          id: string
+          is_active: boolean
+          kind: string
+          name: string
+          slug: string
+          starts_at: string
+        }
+        Insert: {
+          banners?: string[]
+          created_at?: string
+          discount_percent: number
+          ends_at: string
+          id?: string
+          is_active?: boolean
+          kind?: string
+          name: string
+          slug: string
+          starts_at: string
+        }
+        Update: {
+          banners?: string[]
+          created_at?: string
+          discount_percent?: number
+          ends_at?: string
+          id?: string
+          is_active?: boolean
+          kind?: string
+          name?: string
+          slug?: string
+          starts_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

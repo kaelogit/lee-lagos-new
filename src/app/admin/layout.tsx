@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { Menu, X, LayoutDashboard, ShoppingBag, Package, Users, LogOut } from "lucide-react";
+import { Menu, X, LayoutDashboard, ShoppingBag, Package, Users, LogOut, Tag } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -48,6 +48,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: "Overview", path: "/admin", icon: LayoutDashboard },
     { name: "Orders", path: "/admin/orders", icon: ShoppingBag },
     { name: "Inventory", path: "/admin/inventory", icon: Package },
+    { name: "Sales", path: "/admin/sales", icon: Tag },
     { name: "Customers", path: "/admin/customers", icon: Users },
   ];
 

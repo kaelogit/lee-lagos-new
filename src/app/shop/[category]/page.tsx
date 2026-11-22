@@ -7,6 +7,8 @@ import { supabase } from "../../../lib/supabase";
 import Navbar from "../../../components/Navbar";
 import Footer from "../../../components/Footer";
 import ProductCard from "../../../components/ProductCard";
+import SaleShop from "../../../components/SaleShop";
+import { PublicSale, RESERVED_SHOP_SLUGS, slugify } from "../../../lib/sale-shared";
 
 const PAGE_SIZE = 40; 
 
@@ -14,7 +16,12 @@ export default function CategoryPage() {
   const { category } = useParams();
   const searchParams = useSearchParams(); 
   const activeFilter = searchParams.get('filter');
+  const slug = slugify(decodeURIComponent(String(category || "")));
+  const reserved = RESERVED_SHOP_SLUGS.has(slug);
 
+  const [resolved, setResolved] = useState<{ slug: string; sale: PublicSale | null } | null>(
+    reserved ? { slug, sale: null } : null
+  );
   const [products, setProducts] = useState<any[]>([]);
   const [subcategories, setSubcategories] = useState<string[]>(["All"]);
   
@@ -29,8 +36,33 @@ export default function CategoryPage() {
 
   const bgImage = `/${String(category).toLowerCase().replace(/[^a-z0-9]/g, "")}collection.png`;
 
+  useEffect(() => {
+    let cancel = false;
+    if (RESERVED_SHOP_SLUGS.has(slug)) {
+      setResolved({ slug, sale: null });
+      return;
+    }
+
+    setResolved(null);
+    fetch(`/api/sales/public?slug=${encodeURIComponent(slug)}`)
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (!cancel) setResolved({ slug, sale: data?.sale || null });
+      })
+      .catch(() => {
+        if (!cancel) setResolved({ slug, sale: null });
+      });
+
+    return () => {
+      cancel = true;
+    };
+  }, [slug]);
+
+  const saleReady = resolved?.slug === slug;
+
   // 1. SYNC TABS & URL FILTER
   useEffect(() => {
+    if (!saleReady || resolved?.sale) return;
     const categoryName = decodeURIComponent(String(category));
 
     async function fetchTabs() {
@@ -53,7 +85,7 @@ export default function CategoryPage() {
     }
 
     fetchTabs();
-  }, [category, activeFilter]);
+  }, [category, activeFilter, saleReady, resolved]);
 
   // 2. FETCH PRODUCTS (FIX 2: Accept targetSub directly so it never uses old data)
   async function fetchProducts(pageNumber: number, targetSub: string, isLoadMore: boolean = false) {
@@ -101,10 +133,11 @@ export default function CategoryPage() {
 
   // 3. TRIGGER FETCH (Passes current activeSub safely)
   useEffect(() => {
+    if (!saleReady || resolved?.sale) return;
     setPage(0);
     setHasMore(true);
     fetchProducts(0, activeSub, false);
-  }, [activeSub, category]);
+  }, [activeSub, category, saleReady, resolved]);
 
   // 4. HANDLERS
   const handleLoadMore = () => {
@@ -120,6 +153,21 @@ export default function CategoryPage() {
   const formatTitle = (slug: string) => {
     return decodeURIComponent(slug).replace(/-/g, " ").toUpperCase();
   };
+
+  if (!saleReady) {
+    return (
+      <div className="bg-white min-h-screen">
+        <Navbar />
+        <div className="h-64 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (resolved?.sale) {
+    return <SaleShop sale={resolved.sale} />;
+  }
 
   return (
     <div className="bg-white min-h-screen">
