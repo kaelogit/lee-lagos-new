@@ -27,45 +27,29 @@ export default function SaleBanner({ slides }: { slides: BannerSlide[] }) {
 
   if (!slides.length) return null;
 
-  const slide = slides[index] || slides[0];
-
   return (
-    <section className="relative w-full h-[72px] sm:h-[96px] md:h-[124px] lg:h-[150px] bg-black overflow-hidden">
-      {slides.map((item, itemIndex) => (
-        <Link
-          key={`${item.src}-${itemIndex}`}
-          href={item.href}
-          aria-label={item.alt}
-          className={`absolute inset-0 block transition-opacity duration-500 ${
-            itemIndex === index ? "opacity-100" : "opacity-0 pointer-events-none"
-          }`}
-        >
-          <ProductImage
-            src={item.src}
-            alt={item.alt}
-            fill
-            priority={itemIndex === 0}
-            sizes="100vw"
-            className="object-cover object-center"
-          />
-        </Link>
-      ))}
-
-      {slides.length > 1 && (
-        <div className="absolute bottom-2 left-0 right-0 z-10 flex justify-center gap-1.5">
-          {slides.map((item, itemIndex) => (
-            <button
-              key={`${item.src}-dot-${itemIndex}`}
-              type="button"
-              aria-label={`Show banner ${itemIndex + 1}`}
-              onClick={() => setIndex(itemIndex)}
-              className={`h-1.5 rounded-full transition-all ${
-                itemIndex === index ? "w-6 bg-white" : "w-1.5 bg-white/50"
-              }`}
+    <section className="bg-white px-4 sm:px-6 lg:px-8 pt-3 pb-4">
+      <div className="relative mx-auto w-full max-w-[1440px] aspect-[1600/150] overflow-hidden rounded-[1.75rem] sm:rounded-[2.5rem] bg-black">
+        {slides.map((item, itemIndex) => (
+          <Link
+            key={`${item.src}-${itemIndex}`}
+            href={item.href}
+            aria-label={item.alt}
+            className={`absolute inset-0 block transition-opacity duration-500 ${
+              itemIndex === index ? "opacity-100" : "opacity-0 pointer-events-none"
+            }`}
+          >
+            <ProductImage
+              src={item.src}
+              alt={item.alt}
+              fill
+              priority={itemIndex === 0}
+              sizes="100vw"
+              className="object-contain object-center"
             />
-          ))}
-        </div>
-      )}
+          </Link>
+        ))}
+      </div>
     </section>
   );
 }
