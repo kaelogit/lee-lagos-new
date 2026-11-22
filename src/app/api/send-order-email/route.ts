@@ -82,7 +82,7 @@ export async function POST(request: Request) {
           <p style="font-size: 12px; color: #999999; margin: 0; line-height: 1.6;">
             Lees Jewellers<br />
             33A Adebayo Doherty Road, Lekki Phase 1, Lagos<br />
-            leelagos@gmail.com | +234 916 000 3594
+            leeslagos@gmail.com | +234 916 000 3594
           </p>
         </div>
       </div>
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
     const data = await resend.emails.send({
       from: "Lees Jewellers <orders@leelagos.com>",
       to: [email],
-      replyTo: 'leelagos@gmail.com',
+      replyTo: 'leeslagos@gmail.com',
       subject: `Order Confirmed! (#${orderReference}) - Lees Jewellers`,
       html: emailHtml,
     });

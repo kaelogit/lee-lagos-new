@@ -68,8 +68,7 @@ export default function AdminLoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-transparent border-b border-lee-light-grey h-11 outline-none focus:border-lee-black transition-colors text-sm font-medium text-lee-black rounded-none placeholder:text-lee-grey/70"
-                placeholder="admin@leesjewellers.com"
+                className="w-full bg-transparent border-b border-lee-light-grey h-11 outline-none focus:border-lee-black transition-colors text-sm font-medium text-lee-black rounded-none"
               />
             </div>
 
